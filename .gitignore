@@ -1,0 +1,5 @@
+#Exclude from git push
+
+.env
+
+/node_modules

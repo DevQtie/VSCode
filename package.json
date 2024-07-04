@@ -1,0 +1,30 @@
+{
+  "name": "apsalesmobileapi",
+  "version": "1.1.5",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node --experimental-modules server",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "DevQt",
+  "license": "ISC",
+  "description": "prodevqt",
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "mssql": "^11.0.0",
+    "sequelize": "^6.37.3",
+    "tedious": "^18.2.1"
+  },
+  "devDependencies": {
+    "@types/body-parser": "^1.19.5",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/mssql": "^9.1.5",
+    "@types/sequelize": "^4.28.20",
+    "@types/tedious": "^4.0.14"
+  }
+}
