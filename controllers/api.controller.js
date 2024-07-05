@@ -1,5 +1,22 @@
 import { sql, poolPromise } from '../config/db.config.js';
 
+const logsErrorExceptions = async (err) => {
+    // Convert the error object to a string representation
+    const error_exc_logs = JSON.stringify(err);
+    const pool = await poolPromise;
+    const request = pool.request();
+
+    try {
+        await request.input('error_exc_logs', sql.VarChar(sql.MAX), error_exc_logs)
+            .query('EXEC rpiAPSM_spErrExpLogs @error_exc_logs');
+        //console.error('SuccessErrorLogging');//for testing purposes
+    } catch (err2) {
+        res.status(500).send({ message: err.message });
+        // await logsErrorExceptions(err2.message);
+        // console.error('UnsuccessErrorLogging');//for testing purposes
+    }
+}
+
 // Example function to fetch data from MSSQL using stored procedure
 const fetchData = async (req, res) => {
     try {
@@ -8,6 +25,7 @@ const fetchData = async (req, res) => {
         res.json(result.recordset);
     } catch (err) {
         res.status(500).send({ message: err.message });
+        await logsErrorExceptions('fetchData: ' + err.message);
     }
 };//working&tested
 
@@ -27,6 +45,7 @@ const getRandomText = async (req, res) => {
         }
     } catch (err) {
         res.status(500).send({ message: err.message });
+        await logsErrorExceptions('getRandomText: ' + err.message);
     }
 }//working&tested
 
@@ -41,6 +60,7 @@ const addRandomText = async (req, res) => {
         res.status(201).send({ message: 'RandomText added successfully' });
     } catch (err) {
         res.status(500).send({ message: err.message });
+        await logsErrorExceptions(err.message);
     }
 }//working&tested
 
@@ -56,6 +76,7 @@ const updateRandomText = async (req, res) => {
         res.status(200).send({ message: 'RandomText updated successfully' });
     } catch (err) {
         res.status(500).send({ message: err.message });
+        await logsErrorExceptions('updateRandomText: ' + err.message);
     }
 }//working&tested
 
@@ -70,6 +91,7 @@ const deleteRandomText = async (req, res) => {
         res.status(200).send({ message: 'RandomText deleted successfully' });
     } catch (err) {
         res.status(500).send({ message: err.message });
+        await logsErrorExceptions('deleteRandomText: ' + err.message);
     }
 }
 

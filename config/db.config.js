@@ -23,6 +23,9 @@ const config = {
         encrypt: isEncrypt, // Enable encryption
         trustServerCertificate: trustServerCert, // Allow self-signed certificates
         port: parseInt(portValue),
+        cryptoCredentialsDetails: {
+            minVersion: tls.DEFAULT_MIN_VERSION
+        }
     },
     pool: {
         max: parseInt(poolMax), // Maximum number of connections in the pool

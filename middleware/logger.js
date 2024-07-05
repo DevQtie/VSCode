@@ -11,7 +11,7 @@ const asyncLogger = async (req, res, next) => {
     try {
         // Simulate async operation
         await new Promise(resolve => setTimeout(resolve, 100));
-        console.log(`${req.method} ${req.url}`);
+        //console.log(`${req.method} ${req.url}`);//for testing purposes
         next();
     } catch (err) {
         next(err);

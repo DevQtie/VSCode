@@ -12,6 +12,7 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
+import helmet from 'helmet';
 
 // import dotenv from 'dotenv'
 import apiRoutes from './routes/api.routes.js';
@@ -22,6 +23,7 @@ const port = process.env.PORT || 430;
 
 const server = express();
 
+server.use(helmet());
 server.use(cors());
 server.use(bodyParser.json()); // Add middleware to parse JSON
 
