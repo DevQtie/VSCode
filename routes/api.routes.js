@@ -1,6 +1,7 @@
 import express from 'express';
 // import * as fetchController from '../controllers/api.controller.js';
 import {
+    authenticate,
     fetchData,
     getRandomText,
     addRandomText,
@@ -13,14 +14,14 @@ const router = express.Router();
 
 router.use(asyncLogger);//For middleware function
 
-router.get('/get/random_text', fetchData);//retrieve data
+router.get('/get/random_text', authenticate, fetchData);//retrieve data
 
-router.get('/get/random_text/:id', getRandomText);//retrieve data through id
+router.get('/get/random_text/:id', authenticate, getRandomText);//retrieve data through id
 
-router.post('/post/:random_text', addRandomText);//add data
+router.post('/post/:random_text', authenticate, addRandomText);//add data
 
-router.put('/put/:id/:random_text', updateRandomText);//update data
+router.put('/put/:id/:random_text', authenticate, updateRandomText);//update data
 
-router.delete('/delete/:id', deleteRandomText);//delete data
+router.delete('/delete/:id', authenticate, deleteRandomText);//delete data
 
 export default router;

@@ -1,4 +1,46 @@
 import { sql, poolPromise } from '../config/db.config.js';
+import dotenv from 'dotenv'
+import { createCipheriv, createDecipheriv } from 'crypto';
+
+dotenv.config({ path: '.env' }); // Load environment variables
+
+const algorithm = process.env.ALGORITHM;
+
+const key = Buffer.from(process.env.CRYPTO_KEY, process.env.BASE_STRUCTURE); // Use a secure, pre-shared key
+const iv = Buffer.from(process.env.CRYPTO_IV, process.env.BASE_STRUCTURE);  // Use a random IV
+
+const API_KEY = process.env.API_KEY; // Store securely
+
+// Middleware to check API key
+const authenticate = (req, res, next) => {
+    const apiKey = req.headers[process.env.API_HEADER];
+    if (apiKey && apiKey === API_KEY) {
+        next();
+    } else {
+        res.status(401).json({ error: 'Unauthorized' });
+    }
+};
+
+// Encryption function
+const encrypt = (text) => {
+    const cipher = createCipheriv(algorithm, key, iv);
+    let encrypted = cipher.update(text, process.env.ENCODING_STRUCTURE, process.env.ENCODING);
+    encrypted += cipher.final(process.env.ENCODING);
+    return {
+        iv: iv.toString(process.env.ENCODING),
+        encryptedData: encrypted,
+    };
+};
+
+// Decryption function
+const decrypt = (encryptedData, ivHex) => {
+    const iv = Buffer.from(ivHex, process.env.ENCODING);
+    const encryptedText = Buffer.from(encryptedData, process.env.ENCODING);
+    const decipher = createDecipheriv(algorithm, key, iv);
+    let decrypted = decipher.update(encryptedText, process.env.ENCODING, process.env.ENCODING_STRUCTURE);
+    decrypted += decipher.final(process.env.ENCODING_STRUCTURE);
+    return decrypted;
+};
 
 const logsErrorExceptions = async (err) => {
     // Convert the error object to a string representation
@@ -15,7 +57,7 @@ const logsErrorExceptions = async (err) => {
         // await logsErrorExceptions(err2.message);
         // console.error('UnsuccessErrorLogging');//for testing purposes
     }
-}
+}//system-level process only
 
 // Example function to fetch data from MSSQL using stored procedure
 const fetchData = async (req, res) => {
@@ -96,6 +138,7 @@ const deleteRandomText = async (req, res) => {
 }
 
 export {
+    authenticate,
     fetchData,
     getRandomText,
     addRandomText,

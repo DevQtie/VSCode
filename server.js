@@ -14,22 +14,23 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import helmet from 'helmet';
 
-// import dotenv from 'dotenv'
+import dotenv from 'dotenv'
 import apiRoutes from './routes/api.routes.js';
 
-// dotenv.config({ path: '.env' }); // Load environment variables
+dotenv.config({ path: '.env' }); // Load environment variables
 
 const port = process.env.PORT || 430;
 
 const server = express();
 
-server.use(helmet());
-server.use(cors());
+server.use(helmet());//this can be customized
+server.use(cors({ origin: process.env.ALLOWED_ORIGIN }));
+server.use(bodyParser.urlencoded({ extended: true }));
 server.use(bodyParser.json()); // Add middleware to parse JSON
 
 server.use('/api', apiRoutes);
 
 // Start the server
 server.listen(port, () => {
-    console.log(`Server running at http://localhost:${parseInt(port)}`);//NOTE: Kapag may issue sa execution, may suggestions minsan sa terminal na solutions.
+    console.log(`Server running at ${process.env.ALLOWED_ORIGIN + ':' + parseInt(port)}`);//NOTE: Kapag may issue sa execution, may suggestions minsan sa terminal na solutions.
 });/*This is a working straighforward backenda API structure integration*/
