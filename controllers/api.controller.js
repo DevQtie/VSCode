@@ -21,7 +21,8 @@ const API_KEY_1 = process.env.API_KEY1; // Store securely
 //     }
 // };//basic structure
 
-const authenticate = (req, res, next) => {
+const authenticate = async (req, res, next) => {
+    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
     try {
         const { iv } = req.body;
         const encryptedData1 = req.headers[process.env.API_HEADER1];//for API_KEY1
@@ -33,9 +34,11 @@ const authenticate = (req, res, next) => {
             next();
         } else {
             res.status(401).json({ error: 'Unauthorized' });//modify the message only for testing DEFAULT: Unauthorized
+            await logsErrorExceptions('Requestor_s IP: ' + ip);
         }
-    } catch {
+    } catch (err) {
         res.status(401).send({ error: "Unauthorized" });//modify the message only for testing DEFAULT: Unauthorized
+        await logsErrorExceptions('authenticate: ' + err.message + '. IP: ' + ip);
     }
 };//This is working, please don't modify the structure unless necessary.
 
