@@ -7,27 +7,45 @@ dotenv.config({ path: '.env' }); // Load environment variables
 const algorithm = process.env.ALGORITHM;
 
 const key = Buffer.from(process.env.CRYPTO_KEY, process.env.BASE_STRUCTURE); // Use a secure, pre-shared key
-const iv = Buffer.from(process.env.CRYPTO_IV, process.env.BASE_STRUCTURE);  // Use a random IV
+const iv_val = Buffer.from(process.env.CRYPTO_IV, process.env.BASE_STRUCTURE);  // Use a random IV
 
-const API_KEY = process.env.API_KEY; // Store securely
+const API_KEY_1 = process.env.API_KEY1; // Store securely
 
-// Middleware to check API key
+// // Middleware to check API key
+// const authenticate = (req, res, next) => {
+//     const apiKey = req.headers[process.env.API_HEADER];
+//     if (apiKey && apiKey === API_KEY) {
+//         next();
+//     } else {
+//         res.status(401).json({ error: 'Unauthorized' });
+//     }
+// };//basic structure
+
 const authenticate = (req, res, next) => {
-    const apiKey = req.headers[process.env.API_HEADER];
-    if (apiKey && apiKey === API_KEY) {
-        next();
-    } else {
-        res.status(401).json({ error: 'Unauthorized' });
+    try {
+        const { iv } = req.body;
+        const encryptedData1 = req.headers[process.env.API_HEADER1];//for API_KEY1
+        const encryptedData2_raw = req.headers[process.env.API_HEADER2];//for API_KEY2
+        const API_KEY_2 = decrypt(encryptedData2_raw, iv);//Decrypt the header2
+        const apiKey1 = decrypt(encryptedData1, iv);
+        const apiKey2 = process.env.CRYPTO_IV;//cross-check the decrypted header2
+        if (apiKey1 && apiKey1 === API_KEY_1 && API_KEY_2 && API_KEY_2 === apiKey2) {
+            next();
+        } else {
+            res.status(401).json({ error: 'Unauthorized' });//modify the message only for testing DEFAULT: Unauthorized
+        }
+    } catch {
+        res.status(401).send({ error: "Unauthorized" });//modify the message only for testing DEFAULT: Unauthorized
     }
-};
+};//This is working, please don't modify the structure unless necessary.
 
 // Encryption function
 const encrypt = (text) => {
-    const cipher = createCipheriv(algorithm, key, iv);
+    const cipher = createCipheriv(algorithm, key, iv_val);
     let encrypted = cipher.update(text, process.env.ENCODING_STRUCTURE, process.env.ENCODING);
     encrypted += cipher.final(process.env.ENCODING);
     return {
-        iv: iv.toString(process.env.ENCODING),
+        iv_val: iv_val.toString(process.env.ENCODING),
         encryptedData: encrypted,
     };
 };
