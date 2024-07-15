@@ -14,9 +14,9 @@ const router = express.Router();
 
 router.use(asyncLogger);//For middleware function
 
-router.get('/get/random_text', authenticate, fetchData);//retrieve data
+router.post('/postget/random_text', authenticate, fetchData);//retrieve data
 
-router.get('/get/random_text/:id', authenticate, getRandomText);//retrieve data through id
+router.post('/postget/random_text/:id', authenticate, getRandomText);//retrieve data through id
 
 router.post('/post/:random_text', authenticate, addRandomText);//add data
 
