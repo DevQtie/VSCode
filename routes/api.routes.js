@@ -6,7 +6,9 @@ import {
     getRandomText,
     addRandomText,
     updateRandomText,
-    deleteRandomText
+    deleteRandomText,
+
+    signInUser
 } from '../controllers/api.controller.js';
 import asyncLogger from '../middleware/logger.js'
 
@@ -23,5 +25,9 @@ router.post('/post/:random_text', authenticate, addRandomText);//add data
 router.put('/put/:id/:random_text', authenticate, updateRandomText);//update data
 
 router.delete('/delete/:id', authenticate, deleteRandomText);//delete data
+
+/* START OF OFFICIAL NODE.JS API CONTROLLER */
+
+router.post('/postget/sign_in/:user_name/:password/:function_key', authenticate, signInUser);//sign in and retrieve data
 
 export default router;

@@ -158,11 +158,37 @@ const deleteRandomText = async (req, res) => {
     }
 }
 
+/* START OF OFFICIAL NODE.JS API CONTROLLER */
+
+const signInUser = async (req, res) => {
+    const { user_name, password, function_key } = req.params;
+
+    try {
+        const pool = await poolPromise;
+        const result = await pool.request()
+            .input('user_name', sql.VarChar(50), user_name)
+            .input('password', sql.VarChar(50), password)
+            .input('function_key', sql.VarChar(100), function_key)
+            .query('EXEC rpiAPSM_spUsersData @user_name, @password, @function_key');
+
+        if (result.recordset.length > 0) {
+            res.json(result.recordset[0]);
+        } else {
+            res.status(404).send({ message: 'User not found.' });
+        }
+    } catch (err) {
+        res.status(500).send({ message: err.message });
+        await logsErrorExceptions('signInUser: ' + err.message);//always double check the method name
+    }
+}
+
 export {
     authenticate,
     fetchData,
     getRandomText,
     addRandomText,
     updateRandomText,
-    deleteRandomText
+    deleteRandomText,
+
+    signInUser
 };

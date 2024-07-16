@@ -25,8 +25,8 @@ const server = express();
 
 server.use(helmet());//this can be customized
 server.use(cors({ origin: process.env.ALLOWED_ORIGIN }));
-server.use(bodyParser.urlencoded({ extended: true }));
 server.use(bodyParser.json()); // Add middleware to parse JSON
+server.use(bodyParser.urlencoded({ extended: true }));
 
 server.use('/api', apiRoutes);
 
