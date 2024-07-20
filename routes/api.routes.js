@@ -8,7 +8,7 @@ import {
     updateRandomText,
     deleteRandomText,
 
-    signInUser
+    manageUser
 } from '../controllers/api.controller.js';
 import asyncLogger from '../middleware/logger.js'
 
@@ -28,6 +28,8 @@ router.delete('/delete/:id', authenticate, deleteRandomText);//delete data
 
 /* START OF OFFICIAL NODE.JS API CONTROLLER */
 
-router.post('/postget/sign_in/:user_name/:password/:function_key', authenticate, signInUser);//sign in and retrieve data
+router.post('/postget/sign_in/:user_name/:password/:function_key', authenticate, manageUser);//sign in and retrieve data
+
+router.post('/postget/sign_up/:user_name/:password/:function_key', authenticate, manageUser);//sign up and retrieve data
 
 export default router;
