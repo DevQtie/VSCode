@@ -24,7 +24,14 @@ const port = process.env.PORT || 430;
 const server = express();
 
 server.use(helmet());//this can be customized
-server.use(cors({ origin: process.env.ALLOWED_ORIGIN }));
+
+// CORS middleware
+server.use(cors({
+    origin: process.env.ALLOWED_REQUEST_ORIGIN, //origin: '*', //to accept any origin requestors but not recommended for production
+    optionsSuccessStatus: 204,
+}));
+
+// Body parser middleware
 server.use(bodyParser.json()); // Add middleware to parse JSON
 server.use(bodyParser.urlencoded({ extended: true }));
 
@@ -32,5 +39,5 @@ server.use('/api', apiRoutes);
 
 // Start the server
 server.listen(port, () => {
-    console.log(`Server running at ${process.env.ALLOWED_ORIGIN + ':' + parseInt(port)}`);//NOTE: Kapag may issue sa execution, may suggestions minsan sa terminal na solutions.
+    console.log(`Server running at ${process.env.HOST_URL + ':' + parseInt(port)}`);//NOTE: Kapag may issue sa execution, may suggestions minsan sa terminal na solutions.
 });/*This is a working straighforward backenda API structure integration*/

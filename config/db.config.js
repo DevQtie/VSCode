@@ -6,6 +6,19 @@ import tls from 'tls';
 
 tls.DEFAULT_MIN_VERSION = 'TLSv1.2';
 
+/* IMPORTANT NOTES: YOU CAN ADD ANOTHER CONFIG AND DATABASE SOURCE TRANSMISSION BASED ON API REQUEST
+
+    COMPREHENSIVE OVERVIEW:
+
+    * You can create a function in api.controller.js that uses a different config,
+    it serves as a switching point from which the requests are used for (e.g., test requests between live requests).
+
+    * There will be an another poolPromise for the controller to be used later for another database transmission.
+
+    * The router setup in api.router.js will also be adjusted for this matter. 
+
+*/
+
 const isEncrypt = (process.env.MSSQL_ENCRYPT === 'true'); // Evaluates to true
 const trustServerCert = (process.env.MSSQL_TRUSTSERVERCERT === 'true'); // Evaluates to true
 const portValue = process.env.MSSQL_PORT;
