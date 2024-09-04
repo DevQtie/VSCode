@@ -8,7 +8,8 @@ import {
     updateRandomText,
     deleteRandomText,
 
-    manageUser
+    manageUser,
+    getPhilippineAddressName,
 } from '../controllers/api.controller.js';
 import asyncLogger from '../middleware/logger.js'
 
@@ -31,5 +32,7 @@ router.delete('/delete/:id', authenticate, deleteRandomText);//delete data
 router.post('/postget/sign_in/:user_name/:password/:function_key', authenticate, manageUser);//sign in and retrieve data
 
 router.post('/postget/sign_up/:user_name/:password/:function_key', authenticate, manageUser);//sign up and retrieve data
+
+router.post('/postget/ph_address/:type/:name', authenticate, getPhilippineAddressName);//province, city/municipality, barangay
 
 export default router;

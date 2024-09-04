@@ -70,7 +70,7 @@ const logsErrorExceptions = async (err) => {
     const request = pool.request();
 
     try {
-        await request.input('error_exc_logs', sql.VarChar(sql.MAX), error_exc_logs)
+        await request.input('error_exc_logs', sql.NVarChar(sql.MAX), error_exc_logs)
             .query('EXEC rpiAPSM_spErrExpLogs @error_exc_logs');
         //console.error('SuccessErrorLogging');//for testing purposes
     } catch (err2) {
@@ -182,6 +182,23 @@ const manageUser = async (req, res) => {
     }
 }
 
+const getPhilippineAddressName = async (req, res) => {
+    const { type, name } = req.params;
+
+    try {
+        const pool = await poolPromise;
+        const result = await pool.request()
+            .input('type', sql.NVarChar(50), type)
+            .input('name', sql.NVarChar(50), name)
+            .query('EXEC rpiAPSM_spPhilippineLocation @type, @name');
+
+        res.json(result.recordset);
+    } catch (err) {
+        res.status(500).send({ message: err.message });
+        await logsErrorExceptions('getPhilippineAddressName: ' + err.message);//always double check the method name
+    }
+}
+
 export {
     authenticate,
     fetchData,
@@ -190,5 +207,6 @@ export {
     updateRandomText,
     deleteRandomText,
 
-    manageUser
+    manageUser,
+    getPhilippineAddressName,
 };
