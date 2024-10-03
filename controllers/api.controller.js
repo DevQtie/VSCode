@@ -1,4 +1,4 @@
-import { sql, poolPromise } from '../config/db.config.js';
+import { sql, poolPromise, poolPromise17 } from '../config/db.config.js';
 import dotenv from 'dotenv'
 import { createCipheriv, createDecipheriv } from 'crypto';
 
@@ -66,7 +66,7 @@ const decrypt = (encryptedData, ivHex) => {
 const logsErrorExceptions = async (err) => {
     // Convert the error object to a string representation
     const error_exc_logs = JSON.stringify(err);
-    const pool = await poolPromise;
+    const pool = await poolPromise17;
     const request = pool.request();
 
     try {
@@ -83,7 +83,7 @@ const logsErrorExceptions = async (err) => {
 // Example function to fetch data from MSSQL using stored procedure
 const fetchData = async (req, res) => {
     try {
-        const pool = await poolPromise;
+        const pool = await poolPromise17;
         const result = await pool.request().query('EXEC rpiAPSM_spRandomText'); // Replace with your stored procedure name
         res.json(result.recordset);
     } catch (err) {
@@ -96,7 +96,7 @@ const getRandomText = async (req, res) => {
     const { id } = req.params;
 
     try {
-        const pool = await poolPromise;
+        const pool = await poolPromise17;
         const result = await pool.request()
             .input('id', sql.Int, id)
             .query('SELECT * FROM rpiAPSM_Random_Text WHERE id = @id');
@@ -116,7 +116,7 @@ const addRandomText = async (req, res) => {
     const { random_text } = req.params;
 
     try {
-        const pool = await poolPromise;
+        const pool = await poolPromise17;
         const request = pool.request();
         await request.input('random_text', sql.VarChar, random_text)
             .query('INSERT INTO rpiAPSM_Random_Text (random_text) VALUES (@random_text)');
@@ -131,7 +131,7 @@ const updateRandomText = async (req, res) => {
     const { id, random_text } = req.params;
 
     try {
-        const pool = await poolPromise;
+        const pool = await poolPromise17;
         const request = pool.request();
         await request.input('id', sql.Int, id)
             .input('random_text', sql.VarChar, random_text)
@@ -147,7 +147,7 @@ const deleteRandomText = async (req, res) => {
     const { id } = req.params;
 
     try {
-        const pool = await poolPromise;
+        const pool = await poolPromise17;
         const request = pool.request();
         await request.input('id', sql.Int, id)
             .query('DELETE FROM rpiAPSM_Random_Text WHERE id = @id');
@@ -164,7 +164,7 @@ const manageUser = async (req, res) => {
     const { user_name, password, function_key } = req.params;
 
     try {
-        const pool = await poolPromise;
+        const pool = await poolPromise17;
         const result = await pool.request()
             .input('user_name', sql.NVarChar(50), user_name)
             .input('password', sql.NVarChar(50), password)
@@ -186,7 +186,7 @@ const getPhilippineAddressName = async (req, res) => {
     const { type, name } = req.params;
 
     try {
-        const pool = await poolPromise;
+        const pool = await poolPromise17;
         const result = await pool.request()
             .input('type', sql.NVarChar(50), type)
             .input('name', sql.NVarChar(50), name)
