@@ -25,11 +25,30 @@ const server = express();
 
 server.use(helmet());//this can be customized
 
+const allowedOrigins = [process.env.ALLOWED_REQUEST_ORIGIN, process.env.ALLOWED_REQUEST_ORIGIN2, process.env.ALLOWED_REQUEST_ORIGIN3, process.env.ALLOWED_REQUEST_ORIGIN4];
+
 // CORS middleware
+// server.use(cors({
+//     origin: process.env.ALLOWED_REQUEST_ORIGIN, //origin: '*', //to accept any origin requestors but not recommended for production
+//     optionsSuccessStatus: 204,
+// }));
+
+// CORS middleware
+// server.use(cors({
+//     origin: '*', //to accept any origin requestors but not recommended for production
+//     optionsSuccessStatus: 204,
+// }));
+
 server.use(cors({
-    origin: process.env.ALLOWED_REQUEST_ORIGIN, //origin: '*', //to accept any origin requestors but not recommended for production
-    optionsSuccessStatus: 204,
-}));
+    origin: function (origin, callback) {
+        if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    optionsSuccessStatus: 204
+})); // multiple access origin //recommended
 
 // Body parser middleware
 server.use(bodyParser.json()); // Add middleware to parse JSON

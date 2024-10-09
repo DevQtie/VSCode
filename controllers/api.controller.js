@@ -1,6 +1,8 @@
 import { sql, poolPromise, poolPromise17 } from '../config/db.config.js';
 import dotenv from 'dotenv'
 import { createCipheriv, createDecipheriv } from 'crypto';
+import fs from 'fs';
+import path from 'path';
 
 dotenv.config({ path: '.env' }); // Load environment variables
 
@@ -161,15 +163,15 @@ const deleteRandomText = async (req, res) => {
 /* START OF OFFICIAL NODE.JS API CONTROLLER */
 
 const manageUser = async (req, res) => {
-    const { user_name, password, function_key } = req.params;
+    const { mobile_no, password, function_key } = req.params;
 
     try {
         const pool = await poolPromise17;
         const result = await pool.request()
-            .input('user_name', sql.NVarChar(50), user_name)
+            .input('mobile_no', sql.NVarChar(50), mobile_no)
             .input('password', sql.NVarChar(50), password)
             .input('function_key', sql.VarChar(100), function_key)
-            .query('EXEC rpiAPSM_spManageUsersData @user_name, @password, @function_key');
+            .query('EXEC rpiAPSM_spManageUsersData @mobile_no, @password, @function_key');
 
         if (result.recordset.length > 0) {
             res.json(result.recordset[0]);
@@ -199,6 +201,46 @@ const getPhilippineAddressName = async (req, res) => {
     }
 }
 
+const uploadFrontID = async (req, res) => {
+    if (!req.file) {
+        return res.status(400).send('KYC Processing is unavailable.');
+    }
+    const { img_f_kbsize } = req.params;
+
+    const filePath = req.file.path;
+    const img_desc = 'Front ID image';
+    const img_repo = 'C:/CustomFileStreamDataRepository';
+    const filePathFinal = img_repo + '/' + filePath;
+    const fileBuffer = fs.readFileSync(filePath);
+
+    try {
+        const pool = await poolPromise17;
+        const request = pool.request();
+        await request.input('img_name', sql.NVarChar(50), path.basename(filePath))
+            .input('img_desc', sql.NVarChar(200), img_desc)
+            .input('img_data', sql.VarBinary(sql.MAX), fileBuffer)
+            .input('img_repo', sql.NVarChar(256), img_repo)
+            .input('img_f_kbsize', sql.Decimal(8, 3), img_f_kbsize)
+            .query('INSERT INTO rpiAPSM_KYCFrontID (img_name, img_desc, img_data, img_repo, img_f_kbsize) VALUES (@img_name, @img_desc, @filePathFinal, @img_repo, @img_f_kbsize);');
+
+        // res.status(200).send({ message: 'Image uploaded successfully' });
+
+        // Clean up temporary file after saving to database
+        fs.unlink(filePath, async (err) => {
+            if (err) {
+                // console.error('Error deleting temporary file:', err);
+                await logsErrorExceptions('uploadFrontID: ' + err.message);//always double check the method name
+            } else {
+                // console.log('Temporary file deleted successfully.');
+                res.status(200).send({ message: 'Image uploaded successfully' });
+            }
+        });
+    } catch (err) {
+        res.status(500).send({ message: err.message });
+        await logsErrorExceptions('uploadFrontID: ' + err.message);//always double check the method name
+    }
+}
+
 export {
     authenticate,
     fetchData,
@@ -209,4 +251,5 @@ export {
 
     manageUser,
     getPhilippineAddressName,
+    uploadFrontID,
 };
