@@ -1,6 +1,6 @@
 {
   "name": "apsalesmobileapi",
-  "version": "1.6.7",
+  "version": "1.7.4",
   "type": "module",
   "main": "server.js",
   "scripts": {
@@ -24,6 +24,7 @@
     "multer": "^1.4.5-lts.1",
     "node-windows": "^1.0.0-beta.8",
     "sequelize": "^6.37.3",
+    "sharp": "^0.33.5",
     "tedious": "^18.2.1"
   },
   "devDependencies": {

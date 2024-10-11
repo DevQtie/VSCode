@@ -3,6 +3,7 @@ import dotenv from 'dotenv'
 import { createCipheriv, createDecipheriv } from 'crypto';
 import fs from 'fs';
 import path from 'path';
+import sharp from 'sharp';
 
 dotenv.config({ path: '.env' }); // Load environment variables
 
@@ -210,18 +211,18 @@ const uploadFrontID = async (req, res) => {
     const filePath = req.file.path;
     const img_desc = 'Front ID image';
     const img_repo = 'C:/CustomFileStreamDataRepository';
-    const filePathFinal = img_repo + '/' + filePath;
-    const fileBuffer = fs.readFileSync(filePath);
+    // const filePathFinal = img_repo + '/' + filePath;
+    const fileBuffer = fs.readFileSync(filePath);//focus on this
 
     try {
         const pool = await poolPromise17;
         const request = pool.request();
         await request.input('img_name', sql.NVarChar(50), path.basename(filePath))
             .input('img_desc', sql.NVarChar(200), img_desc)
-            .input('img_data', sql.VarBinary(sql.MAX), fileBuffer)
+            .input('img_data', sql.VarBinary(sql.MAX), fileBuffer)// focus on this, the data is reprocessed
             .input('img_repo', sql.NVarChar(256), img_repo)
             .input('img_f_kbsize', sql.Decimal(8, 3), img_f_kbsize)
-            .query('INSERT INTO rpiAPSM_KYCFrontID (img_name, img_desc, img_data, img_repo, img_f_kbsize) VALUES (@img_name, @img_desc, @filePathFinal, @img_repo, @img_f_kbsize);');
+            .query('INSERT INTO rpiAPSM_KYCFrontID (img_name, img_desc, img_data, img_repo, img_f_kbsize) VALUES (@img_name, @img_desc, @img_data, @img_repo, @img_f_kbsize);');
 
         // res.status(200).send({ message: 'Image uploaded successfully' });
 
@@ -241,6 +242,107 @@ const uploadFrontID = async (req, res) => {
     }
 }
 
+const retrieveFrontID = async (req, res) => {
+    try {
+        const pool = await poolPromise17;
+        const request = pool.request();
+        const result = await request.query('EXEC rpiAPSM_spRetrieveFileStreamData');
+
+        if (result.recordset.length > 0) {
+            const files = result.recordset;
+
+            // Option 1: Return the list of files as a JSON response with Base64 encoded file data
+            const fileList = files.map(file => ({
+                img_name: file.img_name,
+                dt_stamp: file.dt_stamp,
+                img_data: file.img_data.toString('base64'), // Convert binary data to base64 for transport in JSON
+                file_size: file.file_size
+            }));
+
+            res.status(200).json(fileList);
+
+            // Option 2: If you want to handle them as downloads, you'd need to implement it differently.
+            // Since sending multiple files in a single response isn't straightforward, you could:
+            //   - Return file links to be downloaded one-by-one
+            //   - Package the files into a ZIP or similar archive
+        } else {
+            res.status(404).json({ message: 'No files found' });
+        }
+    } catch (err) {
+        res.status(500).send({ message: err.message });
+        await logsErrorExceptions('retrieveFrontID: ' + err.message);//always double check the method name
+    }
+}
+
+// Assuming files is an array of file objects with binary img_data
+const fileList = async function (files) {
+    return await Promise.all(
+        files.map(async (file) => {
+            try {
+                // Compress the image data using sharp
+                const compressedImageBuffer = await sharp(file.img_data)
+                    .png({ compressionLevel: 9, quality: 5 }) // Adjust settings as needed for your image format, I've set to max 9
+                    .toBuffer();
+
+                // Convert the compressed binary data to base64
+                const compressedBase64 = compressedImageBuffer.toString('base64');
+
+                return {
+                    img_name: file.img_name,
+                    dt_stamp: file.dt_stamp,
+                    img_data: compressedBase64, // Use the compressed base64 data
+                    file_size: compressedImageBuffer.length // Update file size after compression
+                };
+            } catch (error) {
+                console.error(`Error compressing image ${file.img_name}:`, error);
+                return {
+                    img_name: file.img_name,
+                    dt_stamp: file.dt_stamp,
+                    img_data: null, // Or handle the error accordingly
+                    file_size: file.file_size // Keep original size or set to null
+                };
+            }
+        })
+    );
+};
+
+
+const retrieveLLCFrontID = async (req, res) => { // lossless compression (Lss2C) - devqt's self thought acronym
+    try {
+        const pool = await poolPromise17;
+        const request = pool.request();
+        const result = await request.query('EXEC rpiAPSM_spRetrieveFileStreamData');
+
+        if (result.recordset.length > 0) {
+            const files = result.recordset;
+
+            // Option 1: Return the list of files as a JSON response with Base64 encoded file data
+            // const fileList = files.map(file => ({
+            //     img_name: file.img_name,
+            //     dt_stamp: file.dt_stamp,
+            //     img_data: file.img_data.toString('base64'), // Convert binary data to base64 for transport in JSON
+            //     file_size: file.file_size
+            // }));
+
+
+            // Await the processing of all files before sending the response
+            const processedFiles = await fileList(files);
+
+            res.status(200).json(processedFiles);
+
+            // Option 2: If you want to handle them as downloads, you'd need to implement it differently.
+            // Since sending multiple files in a single response isn't straightforward, you could:
+            //   - Return file links to be downloaded one-by-one
+            //   - Package the files into a ZIP or similar archive
+        } else {
+            res.status(404).json({ message: 'No files found' });
+        }
+    } catch (err) {
+        res.status(500).send({ message: err.message });
+        await logsErrorExceptions('retrieveFrontID: ' + err.message);//always double check the method name
+    }
+}
+
 export {
     authenticate,
     fetchData,
@@ -252,4 +354,6 @@ export {
     manageUser,
     getPhilippineAddressName,
     uploadFrontID,
+    retrieveFrontID,
+    retrieveLLCFrontID,
 };

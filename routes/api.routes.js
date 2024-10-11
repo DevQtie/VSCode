@@ -11,6 +11,8 @@ import {
     manageUser,
     getPhilippineAddressName,
     uploadFrontID,
+    retrieveFrontID,
+    retrieveLLCFrontID,
 } from '../controllers/api.controller.js';
 import asyncLogger from '../middleware/logger.js'
 import multer from 'multer';
@@ -72,5 +74,9 @@ router.post('/postget/sign_up/:mobile_no/:password/:function_key', authenticate,
 router.post('/postget/ph_address/:type/:name', authenticate, getPhilippineAddressName);//province, city/municipality, barangay
 
 router.post('/postget/f_id_upload/:img_f_kbsize', upload.single('file'), authenticate, uploadFrontID); // This is the proper sequence when using upload
+
+router.post('/postget/retrieve_img', authenticate, retrieveFrontID);
+
+router.post('/postget/retrieve_lss2c_img', authenticate, retrieveLLCFrontID);
 
 export default router;
