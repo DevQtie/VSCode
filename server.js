@@ -25,7 +25,10 @@ const server = express();
 
 server.use(helmet());//this can be customized
 
-const allowedOrigins = [process.env.ALLOWED_REQUEST_ORIGIN, process.env.ALLOWED_REQUEST_ORIGIN2, process.env.ALLOWED_REQUEST_ORIGIN3, process.env.ALLOWED_REQUEST_ORIGIN4];
+const allowedOrigins = [process.env.ALLOWED_REQUEST_ORIGIN,
+process.env.ALLOWED_REQUEST_ORIGIN2,
+process.env.ALLOWED_REQUEST_ORIGIN3,
+process.env.ALLOWED_REQUEST_ORIGIN4];
 
 // CORS middleware
 // server.use(cors({

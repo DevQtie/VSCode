@@ -7,12 +7,18 @@ import {
     addRandomText,
     updateRandomText,
     deleteRandomText,
+    uploadMultiImageFilesWithText,
+    uploadTestImg,
+    retrieveTestImg,
+    retrieveLLCTestImage,
 
     manageUser,
     getPhilippineAddressName,
     uploadFrontID,
     retrieveFrontID,
     retrieveLLCFrontID,
+    manageUserCodeRequest,
+    partialSignUp,
 } from '../controllers/api.controller.js';
 import asyncLogger from '../middleware/logger.js'
 import multer from 'multer';
@@ -24,8 +30,9 @@ const storage = multer.diskStorage({
         cb(null, 'uploads/'); // Save files to the 'uploads' directory
     },
     filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9); // Generate a unique filename
-        cb(null, uniqueSuffix + path.extname(file.originalname)); // Use the original file extension
+        // const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9); // Generate a unique filename
+        const uniqueUserFile = file.originalname; // I've decided to use the user specific image
+        cb(null, uniqueUserFile + path.extname(file.originalname)); // Use the original file extension
     }
 });
 
@@ -65,6 +72,14 @@ router.put('/put/:id/:random_text', authenticate, updateRandomText);//update dat
 
 router.delete('/delete/:id', authenticate, deleteRandomText);//delete data
 
+router.post('post/upload/:img1_desc/:img2_desc/:img3_desc', upload.array('files', 3), authenticate, uploadMultiImageFilesWithText)
+
+router.post('/postget/test_upload/:img_f_kbsize', upload.single('file'), authenticate, uploadTestImg); // This is the proper sequence when using upload
+
+router.post('/postget/retrieve_test_img', authenticate, retrieveTestImg);
+
+router.post('/postget/retrieve_lss2c_test_img', authenticate, retrieveLLCTestImage);
+
 /* START OF OFFICIAL NODE.JS API CONTROLLER */
 
 router.post('/postget/sign_in/:mobile_no/:password/:function_key', authenticate, manageUser);//sign in and retrieve data
@@ -78,5 +93,11 @@ router.post('/postget/f_id_upload/:img_f_kbsize', upload.single('file'), authent
 router.post('/postget/retrieve_img', authenticate, retrieveFrontID);
 
 router.post('/postget/retrieve_lss2c_img', authenticate, retrieveLLCFrontID);
+
+router.post('/postget/code/initialize/:email/:mobile_no/:device_id/:code/:function_key', authenticate, manageUserCodeRequest);
+
+router.post('/postget/code/verify/:email/:mobile_no/:device_id/:code/:function_key', authenticate, manageUserCodeRequest);
+
+router.post('/postget/partial_sign_up/:user_id/:device_id/:front_id_img_data/:front_id_img_f_kbsize/:back_id_img_data/:back_id_img_f_kbsize/:selfie_img_data/:selfie_img_f_kbsize/:given_name/:middle_name/:family_name/:suffix/:gender/:birthday/:nationality/:country/:province/:city_mun/:brgy/:unit_h_bldg_st/:vill_sub/:zip_code/:source_of_fund/:emp_status/:employer/:occupation/:email_add/:mobile_no/:password/:function_key', authenticate, partialSignUp);
 
 export default router;

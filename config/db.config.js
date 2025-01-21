@@ -30,13 +30,13 @@ const idleTOMilliValue = process.env.MSSQL_IDLETIMEOUTMILLIS;
 // Configuration for MSSQL connection
 const config = {
     user: process.env.MSSQL_USERNAME,
-    password: process.env.MSSQL_PASSWORD,
+    password: process.env.MSSQL_PASSWORD17,
     server: process.env.MSSQL_SERVER,
-    database: process.env.MSSQL_DATABASE,
+    database: process.env.MSSQL_DATABASE_IMG,
     options: {
         encrypt: isEncrypt, // Enable encryption
         trustServerCertificate: trustServerCert, // Allow self-signed certificates
-        port: parseInt(portValue),
+        port: parseInt(portValue17),
         cryptoCredentialsDetails: {
             minVersion: tls.DEFAULT_MIN_VERSION
         }
@@ -69,18 +69,20 @@ const config17 = {
     },
 };
 
-const poolPromise = null; // I am not using the old setup of sql database
+// const poolPromise = null; // I am not using the old setup of sql database
 
-// const poolPromise = new sql.ConnectionPool(config)
-//     .connect()
-//     .then(pool => {
-//         console.log('Connected to MSSQL');
-//         return pool;
-//     })
-//     .catch(err => {
-//         console.error('Database Connection Failed!', err);
-//         process.exit(1);
-//     });
+const poolPromise = new sql.ConnectionPool(config)
+    .connect()
+    .then(pool => {
+        console.log('Connected to MSSQL');
+        return pool;
+    })
+    .catch(err => {
+        console.error('Database Connection Failed!', err);
+        process.exit(1);
+    });
+
+// const poolPromise17 = null;
 
 const poolPromise17 = new sql.ConnectionPool(config17)
     .connect()
