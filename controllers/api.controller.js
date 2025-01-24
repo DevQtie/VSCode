@@ -24,6 +24,12 @@ const API_KEY_1 = process.env.API_KEY1; // Store securely
 //     }
 // };//basic structure
 
+/*
+
+result.recordset instead of result response to client-side, use result only if necessary
+
+*/
+
 const authenticate = async (req, res, next) => {
     const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
     try {
@@ -510,10 +516,13 @@ const manageUserCodeRequest = async (req, res) => {
         if (result.recordset.length > 0) {
             // Simplify the response
             const spOutput = result.recordset[0]?.SP_OUTPUT || null;
+            console.log(`RES: ${JSON.stringify(result.recordset)}`);
             if (spOutput !== null) {
                 res.status(200).json(spOutput);
             } else {
-                res.status(200).json(result); // if I have more than one records to be retrieved, instead of just a single SP_OUTPUT
+                // Set Cache-Control header
+                res.set('Cache-Control', 'no-store'); // Disable response caching
+                res.status(200).json(result.recordset);  // result - instance in dart: Map<String, dynamic> | result.recordset - instance in dart: List<dynamic>
             }
 
         }
@@ -560,13 +569,13 @@ const partialSignUp = async (req, res) => {
     try {
         const pool = await poolPromise17;
         const request = pool.request();
-        const result = await request.input('user_id', sql.VarChar(50), user_id)
+        const result = await request.input('user_id', sql.NVarChar(50), user_id)
             .input('device_id', sql.NVarChar(500), device_id)
-            .input('front_id_img_data', sql.VarBinary(sql.MAX), new Buffer.from(front_id_img_data))
+            .input('front_id_img_data', sql.VarBinary(sql.MAX), Buffer.from(front_id_img_data) || null)
             .input('front_id_img_f_kbsize', sql.Decimal(10, 3), front_id_img_f_kbsize)
-            .input('back_id_img_data', sql.VarBinary(sql.MAX), new Buffer.from(back_id_img_data))
+            .input('back_id_img_data', sql.VarBinary(sql.MAX), Buffer.from(back_id_img_data) || null)
             .input('back_id_img_f_kbsize', sql.Decimal(10, 3), back_id_img_f_kbsize)
-            .input('selfie_img_data', sql.VarBinary(sql.MAX), new Buffer.from(selfie_img_data))
+            .input('selfie_img_data', sql.VarBinary(sql.MAX), Buffer.from(selfie_img_data) || null)
             .input('selfie_img_f_kbsize', sql.Decimal(10, 3), selfie_img_f_kbsize)
             .input('given_name', sql.VarChar(100), given_name)
             .input('middle_name', sql.VarChar(100), middle_name)
@@ -586,19 +595,113 @@ const partialSignUp = async (req, res) => {
             .input('emp_status', sql.VarChar(50), emp_status)
             .input('employer', sql.VarChar(200), employer)
             .input('occupation', sql.VarChar(200), occupation)
-            .input('email_add', sql.VarChar(50), email_add)
+            .input('email_add', sql.NVarChar(150), email_add)
             .input('mobile_no', sql.VarChar(50), mobile_no)
             .input('password', sql.NVarChar(50), password)
             .input('function_key', sql.VarChar(100), function_key)
             .query('EXEC rpiAPSM_spManageUsersData @user_id, @device_id, @front_id_img_data, @front_id_img_f_kbsize, @back_id_img_data, @back_id_img_f_kbsize, @selfie_img_data, @selfie_img_f_kbsize, @given_name, @middle_name, @family_name, @suffix, @gender, @birthday, @nationality, @country, @province, @city_mun, @brgy, @unit_h_bldg_st, @vill_sub, @zip_code, @source_of_fund, @emp_status, @employer, @occupation, @email_add, @mobile_no, @password, @function_key');
 
-        if (result.recordset.length > 0) {
+        if (result?.recordset?.length > 0) {
             // Simplify the response
             const spOutput = result.recordset[0]?.SP_OUTPUT || null;
+            console.log(`RES: ${JSON.stringify(result.recordset)}`);
             if (spOutput !== null) {
                 res.status(200).json(spOutput);
             } else {
-                res.status(200).json(result); // if I have more than one records to be retrieved, instead of just a single SP_OUTPUT
+                // Set Cache-Control header
+                res.set('Cache-Control', 'no-store'); // Disable response caching
+                res.status(200).json(result.recordset); // result - instance in dart: Map<String, dynamic> | result.recordset - instance in dart: List<dynamic>
+            }
+
+        } else {
+            res.status(500).send({ message: err.message });
+            await logsErrorExceptions('partialSignUp: ' + err.message);//always double check the method name
+        }
+    } catch (err) {
+        res.status(500).send({ message: err.message });
+        await logsErrorExceptions('partialSignUp: ' + err.message);//always double check the method name
+    }
+}
+
+const partialSignUp2 = async (req, res) => {
+    const {
+        user_id,
+        device_id,
+        front_id_img_data,
+        front_id_img_f_kbsize,
+        back_id_img_data,
+        back_id_img_f_kbsize,
+        selfie_img_data,
+        selfie_img_f_kbsize,
+        given_name,
+        middle_name,
+        family_name,
+        suffix,
+        gender,
+        birthday,
+        nationality,
+        country,
+        province,
+        city_mun,
+        brgy,
+        unit_h_bldg_st,
+        vill_sub,
+        zip_code,
+        source_of_fund,
+        emp_status,
+        employer,
+        occupation,
+        email_add,
+        mobile_no,
+        password,
+        function_key
+    } = req.body;
+
+    try {
+        const pool = await poolPromise17;
+        const request = pool.request();
+        const result = await request.input('user_id', sql.NVarChar(50), user_id || null)
+            .input('device_id', sql.NVarChar(500), device_id)
+            .input('front_id_img_data', sql.VarBinary(sql.MAX), Buffer.from(front_id_img_data))
+            .input('front_id_img_f_kbsize', sql.Decimal(10, 3), front_id_img_f_kbsize)
+            .input('back_id_img_data', sql.VarBinary(sql.MAX), Buffer.from(back_id_img_data))
+            .input('back_id_img_f_kbsize', sql.Decimal(10, 3), back_id_img_f_kbsize)
+            .input('selfie_img_data', sql.VarBinary(sql.MAX), Buffer.from(selfie_img_data))
+            .input('selfie_img_f_kbsize', sql.Decimal(10, 3), selfie_img_f_kbsize)
+            .input('given_name', sql.VarChar(100), given_name)
+            .input('middle_name', sql.VarChar(100), middle_name)
+            .input('family_name', sql.VarChar(100), family_name)
+            .input('suffix', sql.VarChar(20), suffix)
+            .input('gender', sql.VarChar(100), gender)
+            .input('birthday', sql.Date, birthday)
+            .input('nationality', sql.VarChar(50), nationality)
+            .input('country', sql.VarChar(200), country)
+            .input('province', sql.VarChar(200), province)
+            .input('city_mun', sql.VarChar(200), city_mun)
+            .input('brgy', sql.VarChar(200), brgy)
+            .input('unit_h_bldg_st', sql.VarChar(200), unit_h_bldg_st)
+            .input('vill_sub', sql.VarChar(200), vill_sub)
+            .input('zip_code', sql.VarChar(4), zip_code)
+            .input('source_of_fund', sql.VarChar(100), source_of_fund)
+            .input('emp_status', sql.VarChar(50), emp_status)
+            .input('employer', sql.VarChar(200), employer)
+            .input('occupation', sql.VarChar(200), occupation)
+            .input('email_add', sql.NVarChar(150), email_add)
+            .input('mobile_no', sql.VarChar(50), mobile_no)
+            .input('password', sql.NVarChar(50), password)
+            .input('function_key', sql.VarChar(100), function_key)
+            .query('EXEC rpiAPSM_spManageUsersData @user_id, @device_id, @front_id_img_data, @front_id_img_f_kbsize, @back_id_img_data, @back_id_img_f_kbsize, @selfie_img_data, @selfie_img_f_kbsize, @given_name, @middle_name, @family_name, @suffix, @gender, @birthday, @nationality, @country, @province, @city_mun, @brgy, @unit_h_bldg_st, @vill_sub, @zip_code, @source_of_fund, @emp_status, @employer, @occupation, @email_add, @mobile_no, @password, @function_key');
+
+        if (result?.recordset?.length > 0) {
+            // Simplify the response
+            const spOutput = result.recordset[0]?.SP_OUTPUT || null;
+            console.log(`RES: ${JSON.stringify(result.recordset)}`);
+            if (spOutput !== null) {
+                res.status(200).json(spOutput);
+            } else {
+                // Set Cache-Control header
+                res.set('Cache-Control', 'no-store'); // Disable response caching, does this should placed on specific line?
+                res.status(200).json(result.recordset); // result - instance in dart: Map<String, dynamic> | result.recordset - instance in dart: List<dynamic>
             }
 
         } else {
@@ -630,4 +733,5 @@ export {
     retrieveLLCFrontID,
     manageUserCodeRequest,
     partialSignUp,
+    partialSignUp2,
 };
