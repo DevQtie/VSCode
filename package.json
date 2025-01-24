@@ -1,6 +1,6 @@
 {
   "name": "apsalesmobileapi",
-  "version": "1.9.3",
+  "version": "1.10.2",
   "type": "module",
   "main": "server.js",
   "scripts": {
