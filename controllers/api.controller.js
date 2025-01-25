@@ -520,15 +520,48 @@ const manageUserCodeRequest = async (req, res) => {
             if (spOutput !== null) {
                 res.status(200).json(spOutput);
             } else {
-                // Set Cache-Control header
-                res.set('Cache-Control', 'no-store'); // Disable response caching
                 res.status(200).json(result.recordset);  // result - instance in dart: Map<String, dynamic> | result.recordset - instance in dart: List<dynamic>
             }
 
+        } else {
+            res.status(200).json({ message: "Not available at this time." });
         }
     } catch (err) {
         res.status(500).send({ message: err.message });
         await logsErrorExceptions('manageUserCodeRequest: ' + err.message); //always double check the method name
+    }
+}
+
+const manageUserCodeRequest2 = async (req, res) => {
+    const { email, mobile_no, device_id, code, function_key } = req.body;
+
+    try {
+        const pool = await poolPromise17;
+        const request = pool.request();
+        const result = await request.input('email', sql.VarChar(100), email)
+            .input('mobile_no', sql.VarChar(14), mobile_no)
+            .input('device_id', sql.VarChar(500), device_id)
+            .input('code', sql.VarChar(10), code)
+            .input('function_key', sql.VarChar(100), function_key)
+            .query('EXEC rpiAPSM_spManageUserCodeRequest @email, @mobile_no, @device_id, @code, @function_key');
+
+        if (result.recordset.length > 0) {
+            // Simplify the response
+            const spOutput = result.recordset[0]?.SP_OUTPUT || null;
+            console.log(`RES: ${JSON.stringify(result.recordset)}`);
+            if (spOutput !== null) {
+                res.status(200).json(spOutput);
+            } else {
+                res.status(200).json(result.recordset);  // result - instance in dart: Map<String, dynamic> | result.recordset - instance in dart: List<dynamic>
+            }
+
+        } else {
+            res.status(200).json({ message: "Not available at this time." });
+
+        }
+    } catch (err) {
+        res.status(500).send({ message: err.message });
+        await logsErrorExceptions('manageUserCodeRequest2: ' + err.message); //always double check the method name
     }
 }
 
@@ -608,14 +641,11 @@ const partialSignUp = async (req, res) => {
             if (spOutput !== null) {
                 res.status(200).json(spOutput);
             } else {
-                // Set Cache-Control header
-                res.set('Cache-Control', 'no-store'); // Disable response caching
                 res.status(200).json(result.recordset); // result - instance in dart: Map<String, dynamic> | result.recordset - instance in dart: List<dynamic>
             }
 
         } else {
-            res.status(500).send({ message: err.message });
-            await logsErrorExceptions('partialSignUp: ' + err.message);//always double check the method name
+            res.status(200).json({ message: "No records found." });
         }
     } catch (err) {
         res.status(500).send({ message: err.message });
@@ -623,7 +653,7 @@ const partialSignUp = async (req, res) => {
     }
 }
 
-const partialSignUp2 = async (req, res) => {
+const accessRequest = async (req, res) => {
     const {
         user_id,
         device_id,
@@ -699,18 +729,48 @@ const partialSignUp2 = async (req, res) => {
             if (spOutput !== null) {
                 res.status(200).json(spOutput);
             } else {
-                // Set Cache-Control header
-                res.set('Cache-Control', 'no-store'); // Disable response caching, does this should placed on specific line?
                 res.status(200).json(result.recordset); // result - instance in dart: Map<String, dynamic> | result.recordset - instance in dart: List<dynamic>
             }
 
         } else {
-            res.status(500).send({ message: err.message });
-            await logsErrorExceptions('partialSignUp: ' + err.message);//always double check the method name
+            res.status(200).json({ message: "No records found." });
         }
     } catch (err) {
         res.status(500).send({ message: err.message });
-        await logsErrorExceptions('partialSignUp: ' + err.message);//always double check the method name
+        await logsErrorExceptions('partialSignUp2: ' + err.message);//always double check the method name
+    }
+}
+
+const manageDeviceProperties = async (req, res) => {
+    const { user_id, device_platform, device_state, device_model, device_version, function_key } = req.body;
+
+    try {
+        const pool = await poolPromise17;
+        const request = pool.request();
+        const result = await request.input('user_id', sql.VarChar(50), user_id)
+            .input('device_platform', sql.VarChar(200), device_platform)
+            .input('device_state', sql.Bit, device_state)
+            .input('device_model', sql.VarChar(200), device_model)
+            .input('device_version', sql.VarChar(200), device_version)
+            .input('function_key', sql.VarChar(100), function_key)
+            .query('EXEC rpiAPSM_spManageUserDeviceProperties @user_id, @device_platform, @device_state, @device_model, @device_version, @function_key');
+
+        if (result.recordset.length > 0) {
+            // Simplify the response
+            const spOutput = result.recordset[0]?.SP_OUTPUT || null;
+            console.log(`RES: ${JSON.stringify(result.recordset)}`);
+            if (spOutput !== null) {
+                res.status(200).json(spOutput);
+            } else {
+                res.status(200).json(result.recordset);  // result - instance in dart: Map<String, dynamic> | result.recordset - instance in dart: List<dynamic>
+            }
+
+        } else {
+            res.status(200).json({ message: "Not available at this time." });
+        }
+    } catch (err) {
+        res.status(500).send({ message: err.message });
+        await logsErrorExceptions('manageDeviceProperties: ' + err.message); //always double check the method name
     }
 }
 
@@ -732,6 +792,8 @@ export {
     retrieveFrontID,
     retrieveLLCFrontID,
     manageUserCodeRequest,
+    manageUserCodeRequest2,
     partialSignUp,
-    partialSignUp2,
+    accessRequest,
+    manageDeviceProperties,
 };
