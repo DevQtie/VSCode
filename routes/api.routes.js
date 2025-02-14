@@ -22,6 +22,7 @@ import {
     partialSignUp,
     accessRequest,
     manageDeviceProperties,
+    manageAddProduct,
 } from '../controllers/api.controller.js';
 import asyncLogger from '../middleware/logger.js'
 import multer from 'multer';
@@ -33,9 +34,9 @@ const storage = multer.diskStorage({
         cb(null, 'uploads/'); // Save files to the 'uploads' directory
     },
     filename: (req, file, cb) => {
-        // const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9); // Generate a unique filename
-        const uniqueUserFile = file.originalname; // I've decided to use the user specific image
-        cb(null, uniqueUserFile + path.extname(file.originalname)); // Use the original file extension
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9); // Generate a unique filename
+        // const uniqueUserFile = file.originalname; // I've decided to use the user specific image
+        cb(null, uniqueSuffix + path.extname(file.originalname)); // Use the original file extension
     }
 });
 
@@ -75,7 +76,7 @@ router.put('/put/:id/:random_text', authenticate, updateRandomText);//update dat
 
 router.delete('/delete/:id', authenticate, deleteRandomText);//delete data
 
-router.post('post/upload/:img1_desc/:img2_desc/:img3_desc', upload.array('files', 3), authenticate, uploadMultiImageFilesWithText)
+router.post('post/upload/:img1_desc/:img2_desc/:img3_desc', upload.fields(['files', 3]), authenticate, uploadMultiImageFilesWithText)
 
 router.post('/postget/test_upload/:img_f_kbsize', upload.single('file'), authenticate, uploadTestImg); // This is the proper sequence when using upload
 
@@ -110,5 +111,9 @@ router.post('/postget/code/process_req', authenticate, manageUserCodeRequest2);
 router.post('/postget/process_access_req', authenticate, accessRequest);
 
 router.post('/postget/process_device_properties_req', authenticate, manageDeviceProperties);
+
+router.post('/postget/add_product_data', upload.fields(['prod_img', 10, 'prod_var_img', 10]), authenticate, manageAddProduct);
+
+// router.post('/postget/add_product_imgs', authenticate, manageAddProduct); // seems redundant
 
 export default router;

@@ -29,7 +29,6 @@ const svc = new Service({
 svc.on('install', () => svc.start());
 svc.install(); // to install on server side device
 
-
 /*-- To run this service.js --*/
 
 //install in this directory the node-windows
