@@ -21,6 +21,8 @@ svc.install();
 
 /* NO NEED TO MODIFY THIS AS LONG AS YOU RENAME YOUR API'S PARENT FOLDER WITH THIS INSTANCE PATTERN */
 
+/* PLEASE OBSERVE THE BACKTICK IN THE NAME AND SCRIPT PATH IF YOU ENCOUNTERED EXCEPTION AND PREFER TO SET IT UP MANUALLY */
+
 const svc = new Service({
     name: `apsalesmobileapi_v${appVersion}`,
     description: 'Node application as Windows Service',
