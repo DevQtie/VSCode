@@ -637,7 +637,7 @@ const partialSignUp = async (req, res) => {
         if (result?.recordset?.length > 0) {
             // Simplify the response
             const spOutput = result.recordset[0]?.SP_OUTPUT || null;
-            console.log(`RES: ${JSON.stringify(result.recordset)}`);
+            // console.log(`RES: ${JSON.stringify(result.recordset)}`);
             if (spOutput !== null) {
                 res.status(200).json(spOutput);
             } else {
@@ -725,7 +725,7 @@ const accessRequest = async (req, res) => {
         if (result?.recordset?.length > 0) {
             // Simplify the response
             const spOutput = result.recordset[0]?.SP_OUTPUT || null;
-            console.log(`RES: ${JSON.stringify(result.recordset)}`);
+            // console.log(`RES: ${JSON.stringify(result.recordset)}`);
             if (spOutput !== null) {
                 res.status(200).json(spOutput);
             } else {
@@ -850,13 +850,13 @@ const manageAddProduct = async (req, res) => { // null-safe - recommended
                         .input('prod_desc_data', sql.NVarChar(sql.MAX), prod_desc_data ?? null)
                         .input('user_id_modifier', sql.VarChar(50), user_id_modifier ?? null)
                         .input('function_key', sql.VarChar(100), function_key ?? null)
-                        .execute('rpiAPSM_spManageProducts');
+                        .execute('rpiAPSM_spManageAdminProducts');
             });
 
             if (result.recordset.length > 0) {
                 // Simplify the response
                 const spOutput = result.recordset[0]?.SP_OUTPUT || null;
-                console.log(`RES: ${JSON.stringify(result.recordset)}`);
+                // console.log(`RES: ${JSON.stringify(result.recordset)}`);
                 if (spOutput !== null) {
                     res.status(200).json(spOutput);
                 } else {
@@ -908,13 +908,13 @@ const manageAddProduct = async (req, res) => { // null-safe - recommended
                         .input('prod_desc_data', sql.NVarChar(sql.MAX), prod_desc_data ?? null)
                         .input('user_id_modifier', sql.VarChar(50), user_id_modifier ?? null)
                         .input('function_key', sql.VarChar(100), function_key ?? null)
-                        .execute('rpiAPSM_spManageProducts');
+                        .execute('rpiAPSM_spManageAdminProducts');
             });
 
             if (result.recordset.length > 0) {
                 // Simplify the response
                 const spOutput = result.recordset[0]?.SP_OUTPUT || null;
-                console.log(`RES: ${JSON.stringify(result.recordset)}`);
+                // console.log(`RES: ${JSON.stringify(result.recordset)}`);
                 if (spOutput !== null) {
                     res.status(200).json(spOutput);
                 } else {
@@ -957,12 +957,12 @@ const manageAddProduct = async (req, res) => { // null-safe - recommended
                     .input('prod_desc_data', sql.NVarChar(sql.MAX), prod_desc_data ?? null)
                     .input('user_id_modifier', sql.VarChar(50), user_id_modifier ?? null)
                     .input('function_key', sql.VarChar(100), function_key ?? null)
-                    .execute('rpiAPSM_spManageProducts');
+                    .execute('rpiAPSM_spManageAdminProducts');
 
             if (result.recordset.length > 0) {
                 // Simplify the response
                 const spOutput = result.recordset[0]?.SP_OUTPUT || null;
-                console.log(`RES: ${JSON.stringify(result.recordset)}`);
+                // console.log(`RES: ${JSON.stringify(result.recordset)}`);
                 if (spOutput !== null) {
                     res.status(200).json(spOutput);
                 } else {
@@ -980,36 +980,12 @@ const manageAddProduct = async (req, res) => { // null-safe - recommended
     }
 }
 
-const manageProductRetrieval = async (req, res) => { // null-safe - recommended
+const manageClientProductRetrieval = async (req, res) => { // null-safe - recommended
     const {
         prod_id,
-        prod_cat_name,
         prod_var_id,
-        prod_name,
-        p_orig_price,
-        p_disc_price,
-        p_value_added_tax,
-        p_stock,
-        p_availability,
-        pv_orig_price,
-        pv_disc_price,
-        pv_value_added_tax,
-        pv_stock,
-        pv_availability,
-        p_key_name_id,
-        pv_key_name_id,
-        p_key_name,
-        pv_key_name,
-        p_key_value,
-        pv_key_value,
-        prod_img_id,
-        prod_img_name, // subject for reevaluation
-        prod_img_desc, // subject for reevaluation
-        prod_img_data, // subject for reevaluation
-        prod_img_f_kbsize,
-        tag_values,
-        prod_desc_data,
-        user_id_modifier,
+        prod_cat_name,
+        user_id,
         function_key } = req.body;
 
     try {
@@ -1017,42 +993,19 @@ const manageProductRetrieval = async (req, res) => { // null-safe - recommended
         const request = pool.request();
         const result =
             await request.input('prod_id', sql.VarChar(50), prod_id ?? null)
-                .input('prod_cat_name', sql.VarChar(20), prod_cat_name ?? null)
                 .input('prod_var_id', sql.VarChar(50), prod_var_id ?? null)
-                .input('prod_name', sql.NVarChar(500), prod_name ?? null)
-                .input('p_orig_price', sql.Decimal(10, 2), p_orig_price ?? null)
-                .input('p_disc_price', sql.Decimal(10, 2), p_disc_price ?? null)
-                .input('p_value_added_tax', sql.Decimal(10, 2), p_value_added_tax ?? null)
-                .input('p_stock', sql.Int, p_stock ?? null)
-                .input('p_availability', sql.Bit, p_availability ?? null)
-                .input('pv_orig_price', sql.Decimal(10, 2), pv_orig_price ?? null)
-                .input('pv_disc_price', sql.Decimal(10, 2), pv_disc_price ?? null)
-                .input('pv_value_added_tax', sql.Decimal(10, 2), pv_value_added_tax ?? null)
-                .input('pv_stock', sql.Int, pv_stock ?? null)
-                .input('pv_availability', sql.Bit, pv_availability ?? null)
-                .input('p_key_name_id', sql.VarChar(50), p_key_name_id ?? null)
-                .input('pv_key_name_id', sql.VarChar(50), pv_key_name_id ?? null)
-                .input('p_key_name', sql.VarChar(50), p_key_name ?? null)
-                .input('pv_key_name', sql.VarChar(50), pv_key_name ?? null)
-                .input('p_key_value', sql.NVarChar(200), p_key_value ?? null)
-                .input('pv_key_value', sql.NVarChar(200), pv_key_value ?? null)
-                .input('prod_img_id', sql.VarChar(50), prod_img_id ?? null)
-                .input('prod_img_name', sql.VarChar(100), prod_img_name ?? null)
-                .input('prod_img_desc', sql.VarChar(50), prod_img_desc ?? null)
-                .input('prod_img_data', sql.VarBinary(sql.MAX), Buffer.from(prod_img_data ?? []))
-                .input('prod_img_f_kbsize', sql.Decimal(10, 3), prod_img_f_kbsize ?? null)
-                .input('tag_values', sql.NVarChar(25), tag_values ?? null)
-                .input('prod_desc_data', sql.NVarChar(sql.MAX), prod_desc_data ?? null)
-                .input('user_id_modifier', sql.VarChar(50), user_id_modifier ?? null)
+                .input('prod_cat_name', sql.VarChar(20), prod_cat_name ?? null)
+                .input('user_id', sql.VarChar(50), user_id ?? null)
                 .input('function_key', sql.VarChar(100), function_key ?? null)
-                .execute('rpiAPSM_spManageProducts');
+                .execute('rpiAPSM_spManageClientProducts');
 
         if (result.recordset.length > 0) {
             // Simplify the response
             const spOutput = result.recordset[0]?.json_data || null;
-            console.log(`RES: ${JSON.stringify(result.recordset)}`);
             if (spOutput !== null) {
                 let parsedResponse = JSON.parse(spOutput);
+                // const flattenedJson = parsedResponse.map(item => item.json_data).flat();
+                // console.log(`RES: ${JSON.stringify(parsedResponse)}`);
                 res.status(200).json(parsedResponse); // The data should always passed through here
             } else {
                 // res.status(200).json(result.recordset); // I did not allow this  // result - instance in dart: Map<String, dynamic> | result.recordset - instance in dart: List<dynamic>
@@ -1064,7 +1017,7 @@ const manageProductRetrieval = async (req, res) => { // null-safe - recommended
         }
     } catch (err) {
         res.status(500).send({ message: err.message });
-        await logsErrorExceptions('manageProductRetrieval: ' + err.message); //always double check the method name
+        await logsErrorExceptions('manageClientProductRetrieval: ' + err.message); //always double check the method name
     }
 }
 
@@ -1091,5 +1044,5 @@ export {
     accessRequest,
     manageDeviceProperties,
     manageAddProduct,
-    manageProductRetrieval,
+    manageClientProductRetrieval,
 };

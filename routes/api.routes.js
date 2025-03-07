@@ -23,7 +23,7 @@ import {
     accessRequest,
     manageDeviceProperties,
     manageAddProduct,
-    manageProductRetrieval,
+    manageClientProductRetrieval,
 } from '../controllers/api.controller.js';
 import asyncLogger from '../middleware/logger.js'
 import multer from 'multer';
@@ -115,7 +115,7 @@ router.post('/postget/process_device_properties_req', authenticate, manageDevice
 
 router.post('/postget/add_product_data', upload.fields(['prod_img', 10, 'prod_var_img', 10]), authenticate, manageAddProduct);
 
-router.post('/postget/retrieve_product_data', authenticate, manageProductRetrieval);
+router.post('/postget/retrieve_client_product_data', authenticate, manageClientProductRetrieval);
 
 // router.post('/postget/add_product_imgs', authenticate, manageAddProduct); // seems redundant
 

@@ -1,20 +1,11 @@
-# VSCode
-Node.JS Backend API Data Access Layer (DAL)
+# App Name
 
-#v1.3.51
+GlamGear API
 
-#v1.3.22
+# Changelog
 
-#v1.3.19
+## 2.0.0-alpha
 
-#v1.3.17
-
-#v1.3.13
-
-#v1.3.2
-
-#v1.2.1
-
-#v1.1.7
-
-#v1.1.5
+* [**IMPORTANT**]: Introducing [semantic versioning](https://semver.org/) (i.e., major.minor.patch+version code-[release status] implementations).
+* Node.js v20.15.0
+* Please see the package.json file for package `dependencies` and `devDependencies` declaration references.
