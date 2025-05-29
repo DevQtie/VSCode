@@ -2,7 +2,16 @@
 
 GlamGear API
 
+# NOTE
+
+Always update `package.json` and `service.js` files when you update the `Changelog` section of this `README.md` file.
+
 # Changelog
+
+## 2.0.1-alpha
+
+* Proper handling of boolean for sql.BIT with `contentType: 'multipart/form-data'`
+* Proper handling of multiple parameters and a single instance of image instance for KYC
 
 ## 2.0.0-alpha
 

@@ -23,7 +23,8 @@ import {
     accessRequest,
     manageDeviceProperties,
     manageAddProduct,
-    manageClientProductRetrieval,
+    manageClientProduct,
+    manageKYCTempData,
 } from '../controllers/api.controller.js';
 import asyncLogger from '../middleware/logger.js'
 import multer from 'multer';
@@ -91,7 +92,9 @@ router.post('/postget/sign_in/:mobile_no/:password/:function_key', authenticate,
 
 router.post('/postget/sign_up/:mobile_no/:password/:function_key', authenticate, manageUser);//sign up and retrieve data  // does not accept null type, it translates into 'null' string instead
 
-router.post('/postget/ph_address/:type/:name', authenticate, getPhilippineAddressName);//province, city/municipality, barangay
+router.post('/postget/ph_address/:type/:name', authenticate, getPhilippineAddressName);//province, city/municipality, barangay // for reference purposes only (because I prefer to use body instead of param)
+
+router.post('/postget/ph_address', authenticate, getPhilippineAddressName);//province, city/municipality, barangay // currently in use
 
 router.post('/postget/f_id_upload/:img_f_kbsize', upload.single('file'), authenticate, uploadFrontID); // This is the proper sequence when using upload
 
@@ -115,8 +118,10 @@ router.post('/postget/process_device_properties_req', authenticate, manageDevice
 
 router.post('/postget/add_product_data', upload.fields(['prod_img', 10, 'prod_var_img', 10]), authenticate, manageAddProduct);
 
-router.post('/postget/retrieve_client_product_data', authenticate, manageClientProductRetrieval);
+router.post('/postget/process_client_side_data', authenticate, manageClientProduct);
 
 // router.post('/postget/add_product_imgs', authenticate, manageAddProduct); // seems redundant
+
+router.post('/postget/manage_kyc_temp_data', upload.fields([{name: 'f_side_id', maxCount: 1}, {name: 'b_side_id', maxCount: 1}, {name: 'selfie', maxCount: 1}]), authenticate, manageKYCTempData);
 
 export default router;

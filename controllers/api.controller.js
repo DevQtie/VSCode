@@ -313,6 +313,15 @@ const retrieveLLCTestImage = async (req, res) => { // lossless compression (Lss2
 
 /* START OF OFFICIAL NODE.JS API CONTROLLER */
 
+function isValidJson(input) {
+    try {
+        JSON.parse(input);
+        return true;
+    } catch (e) {
+        return false;
+    }
+}
+
 const manageUser = async (req, res) => { // not working due to sp's changes
     const { mobile_no, password, function_key } = req.params;
 
@@ -336,14 +345,14 @@ const manageUser = async (req, res) => { // not working due to sp's changes
 }
 
 const getPhilippineAddressName = async (req, res) => {
-    const { type, name } = req.params;
+    const { type, code } = req.body;
 
     try {
         const pool = await poolPromise17;
         const result = await pool.request()
-            .input('type', sql.NVarChar(50), type)
-            .input('name', sql.NVarChar(50), name)
-            .query('EXEC rpiAPSM_spPhilippineLocation @type, @name');
+            .input('type', sql.VarChar(50), type ?? null)
+            .input('code', sql.VarChar(50), code ?? null)
+            .execute('rpiAPSM_spPhilippineLocation');
 
         res.json(result.recordset);
     } catch (err) {
@@ -980,12 +989,29 @@ const manageAddProduct = async (req, res) => { // null-safe - recommended
     }
 }
 
-const manageClientProductRetrieval = async (req, res) => { // null-safe - recommended
+const manageClientProduct = async (req, res) => { // null-safe - recommended
     const {
         prod_id,
         prod_var_id,
         prod_cat_name,
         user_id,
+        quantity,
+        cart_id,
+        shipping_add_id,
+        recipients_name,
+        mobile_no,
+        region,
+        city,
+        district,
+        st_bldg,
+        unit_floor,
+        address_category,
+        is_default,
+        is_selected,
+        pay_ref_no,
+        amount_to_pay,
+        batch_id,
+        m_order_tab,
         function_key } = req.body;
 
     try {
@@ -996,28 +1022,220 @@ const manageClientProductRetrieval = async (req, res) => { // null-safe - recomm
                 .input('prod_var_id', sql.VarChar(50), prod_var_id ?? null)
                 .input('prod_cat_name', sql.VarChar(20), prod_cat_name ?? null)
                 .input('user_id', sql.VarChar(50), user_id ?? null)
+                .input('quantity', sql.Int, quantity ?? null)
+                .input('cart_id', sql.VarChar(50), cart_id ?? null)
+                .input('shipping_add_id', sql.VarChar(50), shipping_add_id ?? null)
+                .input('recipients_name', sql.VarChar(200), recipients_name ?? null)
+                .input('mobile_no', sql.VarChar(14), mobile_no ?? null)
+                .input('region', sql.VarChar(200), region ?? null)
+                .input('city', sql.VarChar(200), city ?? null)
+                .input('district', sql.VarChar(200), district ?? null)
+                .input('st_bldg', sql.VarChar(200), st_bldg ?? null)
+                .input('unit_floor', sql.VarChar(200), unit_floor ?? null)
+                .input('address_category', sql.VarChar(200), address_category ?? null)
+                .input('is_default', sql.Bit, is_default ?? null) // I prefer to use contentType: 'application/json' in my dio setup
+                .input('is_selected', sql.Bit, is_selected ?? null)
+                .input('pay_ref_no', sql.VarChar(50), pay_ref_no ?? null)
+                .input('amount_to_pay', sql.Decimal(15, 2), amount_to_pay ?? null)
+                .input('batch_id', sql.VarChar(50), batch_id ?? null)
+                .input('m_order_tab', sql.Int, m_order_tab ?? null)
                 .input('function_key', sql.VarChar(100), function_key ?? null)
                 .execute('rpiAPSM_spManageClientProducts');
 
-        if (result.recordset.length > 0) {
+        if (result.recordset !== null && result.recordset?.length > 0) {
             // Simplify the response
             const spOutput = result.recordset[0]?.json_data || null;
             if (spOutput !== null) {
-                let parsedResponse = JSON.parse(spOutput);
-                // const flattenedJson = parsedResponse.map(item => item.json_data).flat();
-                // console.log(`RES: ${JSON.stringify(parsedResponse)}`);
-                res.status(200).json(parsedResponse); // The data should always passed through here
+                if (isValidJson(spOutput)) {
+                    let parsedResponse = JSON.parse(spOutput);
+                    // const flattenedJson = parsedResponse.map(item => item.json_data).flat();
+                    // console.log(`RES: ${JSON.stringify(parsedResponse)}`);
+                    res.status(200).json(parsedResponse); // The data should always passed through here
+                } else {
+                    res.status(200).json(spOutput);
+                }
             } else {
                 // res.status(200).json(result.recordset); // I did not allow this  // result - instance in dart: Map<String, dynamic> | result.recordset - instance in dart: List<dynamic>
                 res.status(200).json({ message: "Not available at this time." });
             }
         } else {
             res.status(200).json({ message: "Not available at this time." });
-
         }
     } catch (err) {
         res.status(500).send({ message: err.message });
-        await logsErrorExceptions('manageClientProductRetrieval: ' + err.message); //always double check the method name
+        await logsErrorExceptions('manageClientProduct: ' + err.message); //always double check the method name
+    }
+}
+
+const manageKYCTempData = async (req, res) => { // null-safe - recommended
+    const {
+        f_side_kbs,
+        fsid_fn,
+        b_side_kbs,
+        is_br,
+        bsid_fn,
+        selfie_kbs,
+        slf_fn,
+        gvn_n,
+        mdl_n,
+        fmly_n,
+        sfx,
+        gndr,
+        bdate,
+        ntnlty,
+        cntry,
+        prov,
+        cty_mun,
+        brgy,
+        unt_h_bldg_st,
+        vill_sub,
+        zip_code,
+        src_of_fund,
+        emp_status,
+        emp,
+        occ,
+        user_id,
+        function_key,
+        sub_function_key } = req.body;
+
+    try {
+        const frontSID = req.files['f_side_id']?.[0].path || null;
+        const backSID = req.files['b_side_id']?.[0].path || null;
+        const selfie = req.files['selfie']?.[0].path || null;
+
+        const fsIDfileBuffer = (frontSID != null) ? fs.readFileSync(frontSID) : null; //focus on this
+        const bsIDfileBuffer = (backSID != null) ? fs.readFileSync(backSID) : null; //focus on this
+        const selfieFileBuffer = (selfie != null) ? fs.readFileSync(selfie) : null; //focus on this
+
+        const sanitiesArgVal = (is_br === null) ? null : (((typeof is_br) !== 'boolean') && is_br === 'true') ? true : false;
+
+        const pool = await poolPromise17;
+        const request = pool.request();
+        const result =
+            await request.input('f_side_id', sql.VarBinary(sql.MAX), frontSID != null ? fsIDfileBuffer : null)
+                .input('f_side_kbs', sql.Decimal(10, 3), f_side_kbs ?? null)
+                .input('fsid_file_n', sql.VarChar(255), fsid_fn ?? null)
+                .input('is_back_req', sql.Bit, sanitiesArgVal ?? null) // I need to use contentType: 'multipart/form-data', since I handle a heavy payload request i.e., file
+                .input('b_side_id', sql.VarBinary(sql.MAX), backSID != null ? bsIDfileBuffer : null)
+                .input('b_side_kbs', sql.Decimal(10, 3), b_side_kbs ?? null)
+                .input('bsid_file_n', sql.VarChar(255), bsid_fn ?? null)
+                .input('selfie', sql.VarBinary(sql.MAX), selfie != null ? selfieFileBuffer : null)
+                .input('selfie_kbs', sql.Decimal(10, 3), selfie_kbs ?? null)
+                .input('slf_file_n', sql.VarChar(255), slf_fn ?? null)
+                .input('given_name', sql.VarChar(100), gvn_n ?? null)
+                .input('middle_name', sql.VarChar(100), mdl_n ?? null)
+                .input('family_name', sql.VarChar(100), fmly_n ?? null)
+                .input('suffix', sql.VarChar(20), sfx ?? null)
+                .input('gender', sql.VarChar(100), gndr ?? null)
+                .input('birthdate', sql.Date, bdate ?? null)
+                .input('nationality', sql.VarChar(50), ntnlty ?? null)
+                .input('country', sql.VarChar(200), cntry ?? null)
+                .input('province', sql.VarChar(200), prov ?? null)
+                .input('city_mun', sql.VarChar(200), cty_mun ?? null)
+                .input('brgy', sql.VarChar(200), brgy ?? null)
+                .input('unit_hnbstn', sql.VarChar(200), unt_h_bldg_st ?? null)
+                .input('vill_sub', sql.VarChar(200), vill_sub ?? null)
+                .input('zip_code', sql.VarChar(4), zip_code ?? null)
+                .input('src_of_fnd', sql.VarChar(250), src_of_fund ?? null)
+                .input('emp_status', sql.VarChar(50), emp_status ?? null)
+                .input('employer', sql.VarChar(250), emp ?? null)
+                .input('occupation', sql.VarChar(250), occ ?? null)
+                .input('user_id', sql.VarChar(50), user_id ?? null)
+                .input('function_key', sql.VarChar(100), function_key ?? null)
+                .input('sub_function_key', sql.VarChar(100), sub_function_key ?? null)
+                .execute('rpiAPSM_spKYCTemporaryData');
+
+        if (result.recordset !== null && result.recordset?.length > 0) {
+            // Simplify the response
+            const spOutput = result.recordset[0]?.json_data || null;
+            if (spOutput !== null) {
+                if (isValidJson(spOutput)) {
+                    let parsedResponse = JSON.parse(spOutput);
+                    // const flattenedJson = parsedResponse.map(item => item.json_data).flat();
+                    // console.log(`RES: ${JSON.stringify(parsedResponse)}`);
+
+                    if (frontSID != null) {
+                        fs.unlink(frontSID, async (err) => { // for privacy purposes
+                            if (err) {
+                                // console.error('Error deleting temporary file:', err);
+                                await logsErrorExceptions('manageKYCTempData: ' + err.message);//always double check the method name
+                            } else {
+                                // console.log('Temporary file deleted successfully.');
+                                res.status(200).json(parsedResponse); // The data should always passed through here
+                            }
+                        });
+                    } else if (backSID != null) {
+                        fs.unlink(backSID, async (err) => { // for privacy purposes
+                            if (err) {
+                                // console.error('Error deleting temporary file:', err);
+                                await logsErrorExceptions('manageKYCTempData: ' + err.message);//always double check the method name
+                            } else {
+                                // console.log('Temporary file deleted successfully.');
+                                res.status(200).json(parsedResponse); // The data should always passed through here
+                            }
+                        });
+
+                    } else if (selfie != null) {
+                        fs.unlink(selfie, async (err) => { // for privacy purposes
+                            if (err) {
+                                // console.error('Error deleting temporary file:', err);
+                                await logsErrorExceptions('manageKYCTempData: ' + err.message);//always double check the method name
+                            } else {
+                                // console.log('Temporary file deleted successfully.');
+                                res.status(200).json(parsedResponse); // The data should always passed through here
+                            }
+                        });
+
+                    } else {
+                        res.status(200).json(parsedResponse); // The data should always passed through here
+                    }
+                } else {
+                    if (frontSID != null) {
+                        fs.unlink(frontSID, async (err) => { // for privacy purposes
+                            if (err) {
+                                // console.error('Error deleting temporary file:', err);
+                                await logsErrorExceptions('manageKYCTempData: ' + err.message);//always double check the method name
+                            } else {
+                                // console.log('Temporary file deleted successfully.');
+                                res.status(200).json(spOutput);
+                            }
+                        });
+                    } else if (backSID != null) {
+                        fs.unlink(backSID, async (err) => { // for privacy purposes
+                            if (err) {
+                                // console.error('Error deleting temporary file:', err);
+                                await logsErrorExceptions('manageKYCTempData: ' + err.message);//always double check the method name
+                            } else {
+                                // console.log('Temporary file deleted successfully.');
+                                res.status(200).json(spOutput);
+                            }
+                        });
+
+                    } else if (selfie != null) {
+                        fs.unlink(selfie, async (err) => { // for privacy purposes
+                            if (err) {
+                                // console.error('Error deleting temporary file:', err);
+                                await logsErrorExceptions('manageKYCTempData: ' + err.message);//always double check the method name
+                            } else {
+                                // console.log('Temporary file deleted successfully.');
+                                res.status(200).json(spOutput);
+                            }
+                        });
+
+                    } else {
+                        res.status(200).json(spOutput);
+                    }
+                }
+            } else {
+                // res.status(200).json(result.recordset); // I did not allow this  // result - instance in dart: Map<String, dynamic> | result.recordset - instance in dart: List<dynamic>
+                res.status(200).json({ message: "Not available at this time." });
+            }
+        } else {
+            res.status(200).json({ message: "Not available at this time." });
+        }
+    } catch (err) {
+        res.status(500).send({ message: err.message });
+        await logsErrorExceptions('manageKYCTempData: ' + err.message); //always double check the method name
     }
 }
 
@@ -1044,5 +1262,6 @@ export {
     accessRequest,
     manageDeviceProperties,
     manageAddProduct,
-    manageClientProductRetrieval,
+    manageClientProduct,
+    manageKYCTempData,
 };
