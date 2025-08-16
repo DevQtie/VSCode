@@ -72,7 +72,7 @@ const decrypt = (encryptedData, ivHex) => {
     return decrypted;
 };
 
-const logsErrorExceptions = async (err) => {
+const logsErrorExceptions = async (err) => { // this can be optimized: please review other functions for reference
     // Convert the error object to a string representation
     const error_exc_logs = JSON.stringify(err);
     const pool = await poolPromise17;
@@ -80,7 +80,7 @@ const logsErrorExceptions = async (err) => {
 
     try {
         await request.input('error_exc_logs', sql.NVarChar(sql.MAX), error_exc_logs)
-            .query('EXEC rpiAPSM_spAPIErrExpLogs @error_exc_logs');
+            .query('EXEC rpiAPSM_spAPIErrExcLogs @error_exc_logs');
         //console.error('SuccessErrorLogging');//for testing purposes
     } catch (err2) {
         res.status(500).send({ message: err.message });
@@ -90,7 +90,7 @@ const logsErrorExceptions = async (err) => {
 }//system-level process only
 
 // Example function to fetch data from MSSQL using stored procedure
-const fetchData = async (req, res) => {
+const fetchData = async (req, res) => { // this can be optimized: please review other functions for reference
     try {
         const pool = await poolPromise17;
         const result = await pool.request().query('EXEC rpiAPSM_spRandomText'); // Replace with your stored procedure name
@@ -322,7 +322,7 @@ function isValidJson(input) {
     }
 }
 
-const manageUser = async (req, res) => { // not working due to sp's changes
+const manageUser = async (req, res) => { // not working due to sp's changes // this can be optimized: please review other functions for reference
     const { mobile_no, password, function_key } = req.params;
 
     try {
@@ -409,7 +409,7 @@ const uploadFrontID = async (req, res) => {
     }
 }
 
-const retrieveFrontID = async (req, res) => {
+const retrieveFrontID = async (req, res) => { // this can be optimized: please review other functions for reference
     try {
         const pool = await poolPromise17;
         const request = pool.request();
@@ -473,7 +473,7 @@ const fileList = async function (files) {
     );
 };
 
-const retrieveLLCFrontID = async (req, res) => { // lossless compression (Lss2C) - devqt's self thought acronym
+const retrieveLLCFrontID = async (req, res) => { // lossless compression (Lss2C) - devqt's self thought acronym // this can be optimized: please review other functions for reference
     try {
         const pool = await poolPromise17;
         const request = pool.request();
@@ -509,7 +509,7 @@ const retrieveLLCFrontID = async (req, res) => { // lossless compression (Lss2C)
     }
 }
 
-const manageUserCodeRequest = async (req, res) => {
+const manageUserCodeRequest = async (req, res) => { // this can be optimized: please review other functions for reference
     const { email, mobile_no, device_id, code, function_key } = req.params;
 
     try {
@@ -541,7 +541,7 @@ const manageUserCodeRequest = async (req, res) => {
     }
 }
 
-const manageUserCodeRequest2 = async (req, res) => {
+const manageUserCodeRequest2 = async (req, res) => { // this can be optimized: please review other functions for reference
     const { email, mobile_no, device_id, code, function_key } = req.body;
 
     try {
@@ -574,7 +574,7 @@ const manageUserCodeRequest2 = async (req, res) => {
     }
 }
 
-const partialSignUp = async (req, res) => {
+const partialSignUp = async (req, res) => { // this can be optimized: please review other functions for reference
     const {
         user_id,
         device_id,
@@ -750,7 +750,7 @@ const accessRequest = async (req, res) => {
     }
 }
 
-const manageDeviceProperties = async (req, res) => {
+const manageDeviceProperties = async (req, res) => { // this can be optimized: please review other functions for reference
     const { user_id, device_platform, device_state, device_model, device_version, function_key } = req.body;
 
     try {
@@ -783,212 +783,6 @@ const manageDeviceProperties = async (req, res) => {
     }
 }
 
-const manageAddProduct = async (req, res) => { // null-safe - recommended
-    const {
-        prod_id,
-        prod_cat_name,
-        prod_var_id,
-        prod_name,
-        p_orig_price,
-        p_disc_price,
-        p_value_added_tax,
-        p_stock,
-        p_availability,
-        pv_orig_price,
-        pv_disc_price,
-        pv_value_added_tax,
-        pv_stock,
-        pv_availability,
-        p_key_name_id,
-        pv_key_name_id,
-        p_key_name,
-        pv_key_name,
-        p_key_value,
-        pv_key_value,
-        prod_img_id,
-        prod_img_name, // subject for reevaluation
-        prod_img_desc, // subject for reevaluation
-        prod_img_data, // subject for reevaluation
-        prod_img_f_kbsize,
-        tag_values,
-        prod_desc_data,
-        user_id_modifier,
-        function_key } = req.body;
-
-    try {
-        const pool = await poolPromise17;
-        const request = pool.request();
-        var result;
-
-        if (req.files && req.files['prod_img']) {
-            const prodImages = req.files['prod_img'];
-
-            await prodImages.array.forEach(element => {
-                var prodImagesName = element.originalName;
-                const prodImagesDesc = 'Main product image';
-                var prodImageData = fs.readFileSync(element.path);
-                var prodImageSize = element.size;
-
-                result =
-                    request.input('prod_id', sql.VarChar(50), prod_id ?? null)
-                        .input('prod_cat_name', sql.VarChar(20), prod_cat_name ?? null)
-                        .input('prod_var_id', sql.VarChar(50), prod_var_id ?? null)
-                        .input('prod_name', sql.NVarChar(500), prod_name ?? null)
-                        .input('p_orig_price', sql.Decimal(10, 2), p_orig_price ?? null)
-                        .input('p_disc_price', sql.Decimal(10, 2), p_disc_price ?? null)
-                        .input('p_value_added_tax', sql.Decimal(10, 2), p_value_added_tax ?? null)
-                        .input('p_stock', sql.Int, p_stock ?? null)
-                        .input('p_availability', sql.Bit, p_availability ?? null)
-                        .input('pv_orig_price', sql.Decimal(10, 2), pv_orig_price ?? null)
-                        .input('pv_disc_price', sql.Decimal(10, 2), pv_disc_price ?? null)
-                        .input('pv_value_added_tax', sql.Decimal(10, 2), pv_value_added_tax ?? null)
-                        .input('pv_stock', sql.Int, pv_stock ?? null)
-                        .input('pv_availability', sql.Bit, pv_availability ?? null)
-                        .input('p_key_name_id', sql.VarChar(50), p_key_name_id ?? null)
-                        .input('pv_key_name_id', sql.VarChar(50), pv_key_name_id ?? null)
-                        .input('p_key_name', sql.VarChar(50), p_key_name ?? null)
-                        .input('pv_key_name', sql.VarChar(50), pv_key_name ?? null)
-                        .input('p_key_value', sql.NVarChar(200), p_key_value ?? null)
-                        .input('pv_key_value', sql.NVarChar(200), pv_key_value ?? null)
-                        .input('prod_img_id', sql.VarChar(50), prod_img_id ?? null)
-                        .input('prod_img_name', sql.VarChar(100), prodImagesName ?? null)
-                        .input('prod_img_desc', sql.VarChar(50), prodImagesDesc ?? null)
-                        .input('prod_img_data', sql.VarBinary(sql.MAX), Buffer.from(prodImageData ?? []))
-                        .input('prod_img_f_kbsize', sql.Decimal(10, 3), prodImageSize ?? null)
-                        .input('tag_values', sql.NVarChar(25), tag_values ?? null)
-                        .input('prod_desc_data', sql.NVarChar(sql.MAX), prod_desc_data ?? null)
-                        .input('user_id_modifier', sql.VarChar(50), user_id_modifier ?? null)
-                        .input('function_key', sql.VarChar(100), function_key ?? null)
-                        .execute('rpiAPSM_spManageAdminProducts');
-            });
-
-            if (result.recordset.length > 0) {
-                // Simplify the response
-                const spOutput = result.recordset[0]?.SP_OUTPUT || null;
-                // console.log(`RES: ${JSON.stringify(result.recordset)}`);
-                if (spOutput !== null) {
-                    res.status(200).json(spOutput);
-                } else {
-                    res.status(200).json(result.recordset);  // result - instance in dart: Map<String, dynamic> | result.recordset - instance in dart: List<dynamic>
-                }
-
-            } else {
-                res.status(200).json({ message: "Not available at this time." });
-
-            }
-            // res.status(200).send({ message: "test" }); //testing
-        }
-        else if (req.files && req.files['prod_var_img']) {
-            const prodVarImages = req.files['prod_var_img'];
-
-            await prodVarImages.array.forEach(element => {
-                var prodVarImagesName = element.originalName;
-                const prodVarImagesDesc = 'Product variant image';
-                var prodVarImageData = fs.readFileSync(element.path);
-                var prodVarImageSize = element.size;
-
-                result =
-                    request.input('prod_id', sql.VarChar(50), prod_id ?? null)
-                        .input('prod_cat_name', sql.VarChar(20), prod_cat_name ?? null)
-                        .input('prod_var_id', sql.VarChar(50), prod_var_id ?? null)
-                        .input('prod_name', sql.NVarChar(500), prod_name ?? null)
-                        .input('p_orig_price', sql.Decimal(10, 2), p_orig_price ?? null)
-                        .input('p_disc_price', sql.Decimal(10, 2), p_disc_price ?? null)
-                        .input('p_value_added_tax', sql.Decimal(10, 2), p_value_added_tax ?? null)
-                        .input('p_stock', sql.Int, p_stock ?? null)
-                        .input('p_availability', sql.Bit, p_availability ?? null)
-                        .input('pv_orig_price', sql.Decimal(10, 2), pv_orig_price ?? null)
-                        .input('pv_disc_price', sql.Decimal(10, 2), pv_disc_price ?? null)
-                        .input('pv_value_added_tax', sql.Decimal(10, 2), pv_value_added_tax ?? null)
-                        .input('pv_stock', sql.Int, pv_stock ?? null)
-                        .input('pv_availability', sql.Bit, pv_availability ?? null)
-                        .input('p_key_name_id', sql.VarChar(50), p_key_name_id ?? null)
-                        .input('pv_key_name_id', sql.VarChar(50), pv_key_name_id ?? null)
-                        .input('p_key_name', sql.VarChar(50), p_key_name ?? null)
-                        .input('pv_key_name', sql.VarChar(50), pv_key_name ?? null)
-                        .input('p_key_value', sql.NVarChar(200), p_key_value ?? null)
-                        .input('pv_key_value', sql.NVarChar(200), pv_key_value ?? null)
-                        .input('prod_img_id', sql.VarChar(50), prod_img_id ?? null)
-                        .input('prod_img_name', sql.VarChar(100), prodVarImagesName ?? null)
-                        .input('prod_img_desc', sql.VarChar(50), prodVarImagesDesc ?? null)
-                        .input('prod_img_data', sql.VarBinary(sql.MAX), Buffer.from(prodVarImageData ?? []))
-                        .input('prod_img_f_kbsize', sql.Decimal(10, 3), prodVarImageSize ?? null)
-                        .input('tag_values', sql.NVarChar(25), tag_values ?? null)
-                        .input('prod_desc_data', sql.NVarChar(sql.MAX), prod_desc_data ?? null)
-                        .input('user_id_modifier', sql.VarChar(50), user_id_modifier ?? null)
-                        .input('function_key', sql.VarChar(100), function_key ?? null)
-                        .execute('rpiAPSM_spManageAdminProducts');
-            });
-
-            if (result.recordset.length > 0) {
-                // Simplify the response
-                const spOutput = result.recordset[0]?.SP_OUTPUT || null;
-                // console.log(`RES: ${JSON.stringify(result.recordset)}`);
-                if (spOutput !== null) {
-                    res.status(200).json(spOutput);
-                } else {
-                    res.status(200).json(result.recordset);  // result - instance in dart: Map<String, dynamic> | result.recordset - instance in dart: List<dynamic>
-                }
-
-            } else {
-                res.status(200).json({ message: "Not available at this time." });
-
-            }
-            // res.status(200).send({ message: "test" }); //testing
-        } else {
-            result =
-                await request.input('prod_id', sql.VarChar(50), prod_id ?? null)
-                    .input('prod_cat_name', sql.VarChar(20), prod_cat_name ?? null)
-                    .input('prod_var_id', sql.VarChar(50), prod_var_id ?? null)
-                    .input('prod_name', sql.NVarChar(500), prod_name ?? null)
-                    .input('p_orig_price', sql.Decimal(10, 2), p_orig_price ?? null)
-                    .input('p_disc_price', sql.Decimal(10, 2), p_disc_price ?? null)
-                    .input('p_value_added_tax', sql.Decimal(10, 2), p_value_added_tax ?? null)
-                    .input('p_stock', sql.Int, p_stock ?? null)
-                    .input('p_availability', sql.Bit, p_availability ?? null)
-                    .input('pv_orig_price', sql.Decimal(10, 2), pv_orig_price ?? null)
-                    .input('pv_disc_price', sql.Decimal(10, 2), pv_disc_price ?? null)
-                    .input('pv_value_added_tax', sql.Decimal(10, 2), pv_value_added_tax ?? null)
-                    .input('pv_stock', sql.Int, pv_stock ?? null)
-                    .input('pv_availability', sql.Bit, pv_availability ?? null)
-                    .input('p_key_name_id', sql.VarChar(50), p_key_name_id ?? null)
-                    .input('pv_key_name_id', sql.VarChar(50), pv_key_name_id ?? null)
-                    .input('p_key_name', sql.VarChar(50), p_key_name ?? null)
-                    .input('pv_key_name', sql.VarChar(50), pv_key_name ?? null)
-                    .input('p_key_value', sql.NVarChar(200), p_key_value ?? null)
-                    .input('pv_key_value', sql.NVarChar(200), pv_key_value ?? null)
-                    .input('prod_img_id', sql.VarChar(50), prod_img_id ?? null)
-                    .input('prod_img_name', sql.VarChar(100), prod_img_name ?? null)
-                    .input('prod_img_desc', sql.VarChar(50), prod_img_desc ?? null)
-                    .input('prod_img_data', sql.VarBinary(sql.MAX), Buffer.from(prod_img_data ?? []))
-                    .input('prod_img_f_kbsize', sql.Decimal(10, 3), prod_img_f_kbsize ?? null)
-                    .input('tag_values', sql.NVarChar(25), tag_values ?? null)
-                    .input('prod_desc_data', sql.NVarChar(sql.MAX), prod_desc_data ?? null)
-                    .input('user_id_modifier', sql.VarChar(50), user_id_modifier ?? null)
-                    .input('function_key', sql.VarChar(100), function_key ?? null)
-                    .execute('rpiAPSM_spManageAdminProducts');
-
-            if (result.recordset.length > 0) {
-                // Simplify the response
-                const spOutput = result.recordset[0]?.SP_OUTPUT || null;
-                // console.log(`RES: ${JSON.stringify(result.recordset)}`);
-                if (spOutput !== null) {
-                    res.status(200).json(spOutput);
-                } else {
-                    res.status(200).json(result.recordset);  // result - instance in dart: Map<String, dynamic> | result.recordset - instance in dart: List<dynamic>
-                }
-
-            } else {
-                res.status(200).json({ message: "Not available at this time." });
-
-            }
-        }
-    } catch (err) {
-        res.status(500).send({ message: err.message });
-        await logsErrorExceptions('manageAddProduct: ' + err.message); //always double check the method name
-    }
-}
-
 const manageClientProduct = async (req, res) => { // null-safe - recommended
     const {
         prod_id,
@@ -1012,6 +806,7 @@ const manageClientProduct = async (req, res) => { // null-safe - recommended
         amount_to_pay,
         batch_id,
         m_order_tab,
+        cancellation_reason,
         function_key } = req.body;
 
     try {
@@ -1039,6 +834,7 @@ const manageClientProduct = async (req, res) => { // null-safe - recommended
                 .input('amount_to_pay', sql.Decimal(15, 2), amount_to_pay ?? null)
                 .input('batch_id', sql.VarChar(50), batch_id ?? null)
                 .input('m_order_tab', sql.Int, m_order_tab ?? null)
+                .input('cancellation_reason', sql.VarChar(250), cancellation_reason ?? null)
                 .input('function_key', sql.VarChar(100), function_key ?? null)
                 .execute('rpiAPSM_spManageClientProducts');
 
@@ -1107,7 +903,7 @@ const manageKYCTempData = async (req, res) => { // null-safe - recommended
         const bsIDfileBuffer = (backSID != null) ? fs.readFileSync(backSID) : null; //focus on this
         const selfieFileBuffer = (selfie != null) ? fs.readFileSync(selfie) : null; //focus on this
 
-        const sanitiesArgVal = (is_br === null) ? null : (((typeof is_br) !== 'boolean') && is_br === 'true') ? true : false;
+        const sanitizeArgVal = (is_br === null) ? null : (((typeof is_br) !== 'boolean') && is_br === 'true') ? true : false;
 
         const pool = await poolPromise17;
         const request = pool.request();
@@ -1115,7 +911,7 @@ const manageKYCTempData = async (req, res) => { // null-safe - recommended
             await request.input('f_side_id', sql.VarBinary(sql.MAX), frontSID != null ? fsIDfileBuffer : null)
                 .input('f_side_kbs', sql.Decimal(10, 3), f_side_kbs ?? null)
                 .input('fsid_file_n', sql.VarChar(255), fsid_fn ?? null)
-                .input('is_back_req', sql.Bit, sanitiesArgVal ?? null) // I need to use contentType: 'multipart/form-data', since I handle a heavy payload request i.e., file
+                .input('is_back_req', sql.Bit, sanitizeArgVal ?? null) // I need to use contentType: 'multipart/form-data', since I handle a heavy payload request i.e., file
                 .input('b_side_id', sql.VarBinary(sql.MAX), backSID != null ? bsIDfileBuffer : null)
                 .input('b_side_kbs', sql.Decimal(10, 3), b_side_kbs ?? null)
                 .input('bsid_file_n', sql.VarChar(255), bsid_fn ?? null)
@@ -1261,7 +1057,6 @@ export {
     partialSignUp,
     accessRequest,
     manageDeviceProperties,
-    manageAddProduct,
     manageClientProduct,
     manageKYCTempData,
 };

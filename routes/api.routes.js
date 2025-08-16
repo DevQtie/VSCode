@@ -22,7 +22,6 @@ import {
     partialSignUp,
     accessRequest,
     manageDeviceProperties,
-    manageAddProduct,
     manageClientProduct,
     manageKYCTempData,
 } from '../controllers/api.controller.js';
@@ -110,18 +109,14 @@ router.post('/postget/sign_in/:user_id/:device_id/:front_id_img_data/:front_id_i
 
 /* OPTIMIZING API SERVICE STRUCTURE */
 
-router.post('/postget/code/process_req', authenticate, manageUserCodeRequest2);
+router.post('/postget/code/process_req', authenticate, manageUserCodeRequest2); // currently in use
 
-router.post('/postget/process_access_req', authenticate, accessRequest);
+router.post('/postget/process_access_req', authenticate, accessRequest); // currently in use
 
-router.post('/postget/process_device_properties_req', authenticate, manageDeviceProperties);
+router.post('/postget/process_device_properties_req', authenticate, manageDeviceProperties); // currently in use
 
-router.post('/postget/add_product_data', upload.fields(['prod_img', 10, 'prod_var_img', 10]), authenticate, manageAddProduct);
+router.post('/postget/process_client_side_data', authenticate, manageClientProduct); // currently in use
 
-router.post('/postget/process_client_side_data', authenticate, manageClientProduct);
-
-// router.post('/postget/add_product_imgs', authenticate, manageAddProduct); // seems redundant
-
-router.post('/postget/manage_kyc_temp_data', upload.fields([{name: 'f_side_id', maxCount: 1}, {name: 'b_side_id', maxCount: 1}, {name: 'selfie', maxCount: 1}]), authenticate, manageKYCTempData);
+router.post('/postget/manage_kyc_temp_data', upload.fields([{name: 'f_side_id', maxCount: 1}, {name: 'b_side_id', maxCount: 1}, {name: 'selfie', maxCount: 1}]), authenticate, manageKYCTempData); // currently in use
 
 export default router;
